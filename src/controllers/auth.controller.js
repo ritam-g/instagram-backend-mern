@@ -86,30 +86,15 @@ async function registerController(req, res) {
     })
 }
 
-// ================= LOGIN CONTROLLER =================
-async function loginController(req, res) {
+async function loginController(req, res){
+    const { username, email, password } = req.body;
+    // Find user by email or username
+    const userExists = await userModel.findOne({
+        $or: [{ email }, { username }],
+    });
 
-    const { username, email, password } = req.body
-
-    //NOTE - //! we need otpal and low server user code
-    //! has to check username and email in our db
-    //! check one
-
-    const userExiest = await userModel.findOne({
-
-        //! or take multiple condition
-        //REVIEW - we wna tto do email || usernmae so we can do this way
-        $or: [
-            { email },
-            { username }
-        ]
-    })
-
-    //! if user not found → stop login
-    if (!userExiest) {
-        return res.status(404).json({
-            message: "user not exiest"
-        })
+    if (!userExists) {
+        return res.status(404).json({ message: "User not found" });
     }
 
     //! passerod check
