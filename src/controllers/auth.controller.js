@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken")
 const userModel = require("../model/user.model")
-const crypto = require('crypto');
+const bcrypt = require("bcryptjs")
 async function registerController(req, res)  {
     const {
         username,
@@ -31,7 +31,8 @@ async function registerController(req, res)  {
     //NOTE - //! not ducplicate that means create user  
 
     //STUB - //! hash password 
-    const hashPassword = crypto.createHash('sha256').update(password).digest('hex')
+    const hashPassword = await bcrypt.hash(password, 10);
+
     const user = await userModel.create({
         username, email, password: hashPassword, bio, profileImage
     })
@@ -46,7 +47,6 @@ async function registerController(req, res)  {
         user: {
             username: user.username,
             email: user.email,
-            password: user.password,
             bio: user.bio,
             profileImage: user.profileImage,
         }
@@ -73,9 +73,9 @@ async function loginController (req, res)  {
         })
     }
     //! passerod check 
-    const hash = crypto.createHash('sha256').update(password).digest('hex')
+    
 
-    const resultPass = hash === userExiest.password
+    const resultPass = await bcrypt.compare(password,userExiest.password)
     if (!resultPass) return res.status(401).json({ message: 'paswwrod is invalid ' })
      //NOTE - validity token 
     const token = jwt.sign(
