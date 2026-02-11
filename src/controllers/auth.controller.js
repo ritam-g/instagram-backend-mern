@@ -53,7 +53,7 @@ async function registerController(req, res)  {
     })
 
 }
-
+//NOTE - //!logincontroller
 async function loginController (req, res)  {
     const { username, email, password } = req.body
     //NOTE - //! we need otpal and low server user code 
