@@ -13,8 +13,6 @@ async function postController(req, res) {
     //NOTE - //! now doing valid one  
 
     /**
-     *      
-     * //* INFO  mkae proper folder structure for image kit   
      * //* INFO  enough for the day    
      */
     //* INFO  create peroper post controler 
@@ -34,28 +32,32 @@ async function postController(req, res) {
     }
 
     let user = await userModel.findOne({ _id: decode.id })
+
     if (!user) return res.status(401).json({ message: "user is unauthorize" })
 
-    const file = await imagekit.files.upload({
-        file: req.file.buffer.toString("base64"),
-        fileName: "Test"
-    });
+    let file = null
+    try {
+        file = await imagekit.files.upload({
+            file: req.file.buffer.toString("base64"),
+            fileName: "Test",
+            folder: "/Instgram/posts" //! //* INFO INFO  mkae proper folder structure for image kit 
+        });
+    } catch (err) {
+        res.status(404).json({
+            message: 'something went wrong '
+        })
+    }
 
     //* INFO  then create post  
 
     const post = await postModel.create({
-        caption,imgUrl:file.url,user:user._id
+        caption, imgUrl: file.url, user: user._id
     })
 
     return res.status(201).json({
-        message:'post is created ',
+        message: 'post is created ',
         post
     })
-
-
-
-
-
 }
 
 
