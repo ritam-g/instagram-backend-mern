@@ -6,6 +6,11 @@ const app=express()
 
 app.use(express.json())
 app.use(cookieParser())
+app.post('/',(req,res)=>{
+    res.status(200).json({
+        message:'welcome to you socila media website '
+    })
+})
 
 app.use('/api/auth',authRoute)
 app.use('/api/posts',postRoute)
