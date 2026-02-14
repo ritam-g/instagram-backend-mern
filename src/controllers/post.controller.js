@@ -60,5 +60,28 @@ async function postController(req, res) {
     })
 }
 
+async function postGetController(req, res) {
+    const token = req.cookies.token
+    let decode = null
+    try {
+        decode = jwt.verify(token, process.env.JWT_SECRET)
+    } catch (err) {
+        console.log(err);
+        
+        return res.status(404).json({
+            message: err.message,
+            message2: 'taken is invalid'
+        })
+    }
+    const { id } = decode
+    const userAllPost = await postModel.find({ user: id })
 
-module.exports = { postController };
+    if (!userAllPost) return res.status(401).json({ message: 'not post is found' })
+
+    return res.status(200).json({
+        message:'all post fetch',userAllPost
+    })
+}
+
+
+module.exports = { postController, postGetController };

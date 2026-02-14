@@ -8,7 +8,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.post('/',(req,res)=>{
     res.status(200).json({
-        message:'welcome to you socila media website '
+        message:'welcome to you social media website '
     })
 })
 
