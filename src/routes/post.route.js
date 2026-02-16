@@ -1,13 +1,14 @@
 const express = require("express");
 const { postController, postGetController, postDetailsController } = require("../controllers/post.controller");
-const multer  = require('multer') 
+const multer  = require('multer'); 
+const identifyUser = require("../middlewares/auth.middleware");
 
 
 const upload = multer({ storage: multer.memoryStorage() })
 const postRoute=express.Router()
 
 //! image is the client seding imge key name in from-data 
-postRoute.post('/',upload.single("image"),postController)
-postRoute.get('/',postGetController)
-postRoute.get('/:postid',postDetailsController)
+postRoute.post('/',identifyUser,upload.single("image"),postController)
+postRoute.get('/',identifyUser,postGetController)
+postRoute.get('/:postid',identifyUser,postDetailsController)
 module.exports=postRoute

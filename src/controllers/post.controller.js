@@ -21,20 +21,21 @@ async function postController(req, res) {
     //* INFO  create peroper post controler 
     const { caption } = req.body
 
-    //* INFO  check the cokkie exiest or not  
-    const token = req.cookies.token;
+    //NOTE - this task will do by middle ware
+    // //* INFO  check the cokkie exiest or not  
+    // const token = req.cookies.token;
 
-    if (!token) return res.status(401).json({ message: "user is unauthorize" })
+    // if (!token) return res.status(401).json({ message: "user is unauthorize" })
 
-    //* INFO  if exieste check valid or not 
-    let decode = null
-    try {
-        decode = jwt.verify(token, process.env.JWT_SECRET)
-    } catch (err) {
-        return res.status(400).json({ messsage: err })
-    }
+    // //* INFO  if exieste check valid or not 
+    // let decode = null
+    // try {
+    //     decode = jwt.verify(token, process.env.JWT_SECRET)
+    // } catch (err) {
+    //     return res.status(400).json({ messsage: err })
+    // }
 
-    let user = await userModel.findOne({ _id: decode.id })
+    let user = await userModel.findOne({ _id: req.user.id })
 
     if (!user) return res.status(401).json({ message: "user is unauthorize" })
 
@@ -67,19 +68,8 @@ async function postController(req, res) {
  * they will get post 
  */
 async function postGetController(req, res) {
-    const token = req.cookies.token
-    let decode = null
-    try {
-        decode = jwt.verify(token, process.env.JWT_SECRET)
-    } catch (err) {
-        console.log(err);
-
-        return res.status(404).json({
-            message: err.message,
-            message2: 'taken is invalid'
-        })
-    }
-    const { id } = decode
+    
+    const { id } = req.user
     const userAllPost = await postModel.find({ user: id })
 
     if (!userAllPost) return res.status(401).json({ message: 'not post is found' })
@@ -98,25 +88,7 @@ async function postDetailsController(req, res) {
         // 1️⃣ Get Post ID from route params
         const postId = req.params.postid;
 
-        // 2️⃣ Get JWT token from cookies
-        const token = req.cookies.token;
-
-        // 3️⃣ If token not present → user not logged in
-        if (!token) {
-            return res.status(401).json({
-                message: "Unauthorized access. Please login first."
-            });
-        }
-
-        // 4️⃣ Verify token
-        let decodedUser;
-        try {
-            decodedUser = jwt.verify(token, process.env.JWT_SECRET);
-        } catch (error) {
-            return res.status(401).json({
-                message: "Invalid or expired token."
-            });
-        }
+        
 
         // 5️⃣ Find post by ID
         const post = await postModel.findById(postId);
@@ -130,7 +102,7 @@ async function postDetailsController(req, res) {
 
         // 7️⃣ Check if logged-in user is the owner of the post
         // post.user is ObjectId → compare properly
-        const isOwner = post.user.toString() === decodedUser.id;
+        const isOwner = post.user.toString() === req.user.id;
 
         if (!isOwner) {
             return res.status(403).json({
@@ -154,4 +126,4 @@ async function postDetailsController(req, res) {
 }
 
 
-module.exports = { postController, postGetController,postDetailsController };
+module.exports = { postController, postGetController, postDetailsController };
