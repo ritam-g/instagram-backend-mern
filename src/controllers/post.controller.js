@@ -2,6 +2,8 @@ const postModel = require("../model/post.model");
 const ImageKit = require('@imagekit/nodejs');
 const jwt = require("jsonwebtoken");
 const userModel = require("../model/user.model");
+const followModel = require("../model/follow.model");
+const { json } = require("express");
 const imagekit = new ImageKit({
     publicKey: "xxx",
     privateKey: process.env.IMAGE_KIT_PRIVATE_KEY,
@@ -21,19 +23,7 @@ async function postController(req, res) {
     //* INFO  create peroper post controler 
     const { caption } = req.body
 
-    //NOTE - this task will do by middle ware
-    // //* INFO  check the cokkie exiest or not  
-    // const token = req.cookies.token;
-
-    // if (!token) return res.status(401).json({ message: "user is unauthorize" })
-
-    // //* INFO  if exieste check valid or not 
-    // let decode = null
-    // try {
-    //     decode = jwt.verify(token, process.env.JWT_SECRET)
-    // } catch (err) {
-    //     return res.status(400).json({ messsage: err })
-    // }
+    
 
     let user = await userModel.findOne({ _id: req.user.id })
 
@@ -125,5 +115,32 @@ async function postDetailsController(req, res) {
     }
 }
 
+async function followUserController(req,res) {
+    try {
+        const follower=req.user.id
+        const followee=req.params.userid
+    
+        const isUserExiest=await userModel.findById(followee)
+        const isCelebrity=await userModel.findById(follower)
 
-module.exports = { postController, postGetController, postDetailsController };
+        
+        if(!isUserExiest)return res.status(401).json({message:'invalid user',statusbar:'faild'})
+        
+        if(!isCelebrity)return res.status(401).json({message:'invalid person you are follwing',statusbar:'faild'})
+    
+        //NOTE - both are ok then create 
+        const follow=await followModel.create({
+            follower:req.user.username,followee:isUserExiest.username
+        }) 
+    
+        return res.status(201).json({message:`'you sucessfull follow' ${isCelebrity.username}`,follow})
+    } catch (err) {
+        console.log(err);
+        
+        return res.status(404).json({message:'some internal err'})
+    }
+    
+}
+
+
+module.exports = { postController, postGetController, postDetailsController,followUserController };

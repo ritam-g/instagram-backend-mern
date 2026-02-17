@@ -37,7 +37,7 @@ async function registerController(req, res)  {
         username, email, password: hashPassword, bio, profileImage
     })
     //! create token 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" })
+    const token = jwt.sign({ id: user._id,username:username }, process.env.JWT_SECRET, { expiresIn: "1d" })
     //NOTE - set cokkie
 
     res.cookie('token', token)
@@ -79,7 +79,7 @@ async function loginController (req, res)  {
     if (!resultPass) return res.status(401).json({ message: 'paswwrod is invalid ' })
      //NOTE - validity token 
     const token = jwt.sign(
-        { id: userExiest._id },
+        { id: userExiest._id,username:username },
         process.env.JWT_SECRET,
         { expiresIn: "1d" }
     )
