@@ -1,34 +1,34 @@
 const jwt = require("jsonwebtoken")
 const userModel = require("../model/user.model")
 const bcrypt = require("bcryptjs")
-async function registerController(req, res)  {
+async function registerController(req, res) {
     const {
         username,
         email,
         password,
         bio,
         profileImage } = req.body
-    //! checks user exite alredy or not 
-    //! cehck one by one way 
-    //NOTE -   we can do less server lode code also 
-    // const userExiest1=userModel.findOne({email})
-    // const userExiest2=userModel.findOne({email})
+    //! checks user exists already or not 
+    //! check one by one way 
+    //NOTE -   we can do less server load code also 
+    // const userExists1=userModel.findOne({email})
+    // const userExists2=userModel.findOne({email})
 
     //NOTE - //!BETTER WAY OF doing THIS 
-    const userExiest = await userModel.findOne({
+    const userExists = await userModel.findOne({
         //! or take multiple condition 
-        //REVIEW - we wna tto do email||usernmae so we can do this way  
+        //REVIEW - we want to do email||username so we can do this way  
         $or: [
             { email },
             { username }
         ]
     })
     //! if user in db then return  
-    if (userExiest) return res.status(409).json({
-        message: 'user already exiest :->'+ (userExiest.email===email?'please chage the eamil ':'plese chage the usename ')
+    if (userExists) return res.status(409).json({
+        message: 'user already exists :->' + (userExists.email === email ? 'please change the email ' : 'please change the username ')
     })
 
-    //NOTE - //! not ducplicate that means create user  
+    //NOTE - //! not duplicate that means create user  
 
     //STUB - //! hash password 
     const hashPassword = await bcrypt.hash(password, 10);
@@ -37,8 +37,8 @@ async function registerController(req, res)  {
         username, email, password: hashPassword, bio, profileImage
     })
     //! create token 
-    const token = jwt.sign({ id: user._id,username:username }, process.env.JWT_SECRET, { expiresIn: "1d" })
-    //NOTE - set cokkie
+    const token = jwt.sign({ id: user._id, username: username }, process.env.JWT_SECRET, { expiresIn: "1d" })
+    //NOTE - set cookie
 
     res.cookie('token', token)
 
@@ -53,33 +53,33 @@ async function registerController(req, res)  {
     })
 
 }
-//NOTE - //!logincontroller
-async function loginController (req, res)  {
+//NOTE - //!login controller
+async function loginController(req, res) {
     const { username, email, password } = req.body
-    //NOTE - //! we need otpal and low server user code 
+    //NOTE - //! we need optimal and low server user code 
     //! has to check username and email in our db 
     //! check one 
-    const userExiest = await userModel.findOne({
+    const userExists = await userModel.findOne({
         //! or take multiple condition 
-        //REVIEW - we wna tto do email||usernmae so we can do this way  
+        //REVIEW - we want to do email||username so we can do this way  
         $or: [
-            { email},
+            { email },
             { username }
         ]
     })
-    if (!userExiest) {
+    if (!userExists) {
         return res.status(404).json({
-            message: "user not exiest"
+            message: "user not exists"
         })
     }
-    //! passerod check 
-    
+    //! password check 
 
-    const resultPass = await bcrypt.compare(password,userExiest.password)
-    if (!resultPass) return res.status(401).json({ message: 'paswwrod is invalid ' })
-     //NOTE - validity token 
+
+    const resultPass = await bcrypt.compare(password, userExists.password)
+    if (!resultPass) return res.status(401).json({ message: 'password is invalid ' })
+    //NOTE - validity token 
     const token = jwt.sign(
-        { id: userExiest._id,username:username },
+        { id: userExists._id, username: username },
         process.env.JWT_SECRET,
         { expiresIn: "1d" }
     )
@@ -88,14 +88,14 @@ async function loginController (req, res)  {
     //NOTE - valid user
     res.status(200)
         .json({
-            message: "User loggedIn successfully.",
+            message: "User logged in successfully.",
             user: {
-                username: userExiest.username,
-                email: userExiest.email,
-                bio: userExiest.bio,
-                profileImage: userExiest.profileImage
+                username: userExists.username,
+                email: userExists.email,
+                bio: userExists.bio,
+                profileImage: userExists.profileImage
             }
         })
 
 }
-module.exports={registerController,loginController}
+module.exports = { registerController, loginController }

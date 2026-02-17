@@ -13,7 +13,7 @@ const postRoute = require("./routes/post.route");
 
 app.post('/',(req,res)=>{
     res.status(200).json({
-        message:'welcome to you social media website '
+        message:'welcome to your social media website '
     })
 })
 

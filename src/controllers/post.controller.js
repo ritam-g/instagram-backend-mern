@@ -20,21 +20,21 @@ async function postController(req, res) {
     /**
      * //* INFO  enough for the day    
      */
-    //* INFO  create peroper post controler 
+    //* INFO  create proper post controller 
     const { caption } = req.body
 
-    
+
 
     let user = await userModel.findOne({ _id: req.user.id })
 
-    if (!user) return res.status(401).json({ message: "user is unauthorize" })
+    if (!user) return res.status(401).json({ message: "user is unauthorized" })
 
     let file = null
     try {
         file = await imagekit.files.upload({
             file: req.file.buffer.toString("base64"),
             fileName: "Test",
-            folder: "/Instgram/posts" //! //* INFO INFO  mkae proper folder structure for image kit 
+            folder: "/Instagram/posts" //! //* INFO INFO  make proper folder structure for image kit 
         });
     } catch (err) {
         res.status(404).json({
@@ -58,11 +58,11 @@ async function postController(req, res) {
  * they will get post 
  */
 async function postGetController(req, res) {
-    
+
     const { id } = req.user
     const userAllPost = await postModel.find({ user: id })
 
-    if (!userAllPost) return res.status(401).json({ message: 'not post is found' })
+    if (!userAllPost) return res.status(401).json({ message: 'no post is found' })
 
     return res.status(200).json({
         message: 'all post fetch', userAllPost
@@ -78,7 +78,7 @@ async function postDetailsController(req, res) {
         // 1️⃣ Get Post ID from route params
         const postId = req.params.postid;
 
-        
+
 
         // 5️⃣ Find post by ID
         const post = await postModel.findById(postId);
@@ -115,32 +115,62 @@ async function postDetailsController(req, res) {
     }
 }
 
-async function followUserController(req,res) {
+async function followUserController(req, res) {
     try {
-        const follower=req.user.id
-        const followee=req.params.userid
-    
-        const isUserExiest=await userModel.findById(followee)
-        const isCelebrity=await userModel.findById(follower)
+        const follower = req.user.id
+        const followee = req.params.userid
 
-        
-        if(!isUserExiest)return res.status(401).json({message:'invalid user',statusbar:'faild'})
-        
-        if(!isCelebrity)return res.status(401).json({message:'invalid person you are follwing',statusbar:'faild'})
-    
+        const isUserExists = await userModel.findById(followee)
+        const isCelebrity = await userModel.findById(follower)
+
+
+        //* Exists or not 
+        if (!isUserExists) return res.status(401).json({ message: 'invalid user', statusbar: 'failed' })
+
+        if (!isCelebrity) return res.status(401).json({ message: 'invalid person you are following', statusbar: 'failed' })
+
+        //NOTE - check have to make 
+
+        //REVIEW - same user cannot follow more than one and he cannot follow multiple times 
+
+        const singleFollowChecks = await followModel.find({ follower: isCelebrity.username, followee: isUserExists.username })
+        if (singleFollowChecks.length > 0) return res.status(401).json({ message: 'you are already following this user ', statusbar: 'failed' })
+
+        //NOTE - user can not follow himself 
+        if (isCelebrity.username === isUserExists.username) return res.status(401).json({ message: 'you can not follow yourself ', statusbar: 'failed' })
+
+
+
         //NOTE - both are ok then create 
-        const follow=await followModel.create({
-            follower:req.user.username,followee:isUserExiest.username
-        }) 
-    
-        return res.status(201).json({message:`'you sucessfull follow' ${isCelebrity.username}`,follow})
+        const follow = await followModel.create({
+            follower: req.user.username, followee: isUserExiest.username
+        })
+
+        return res.status(201).json({ message: `'you successfully follow' ${isCelebrity.username}`, follow })
     } catch (err) {
         console.log(err);
-        
-        return res.status(404).json({message:'some internal err'})
+
+        return res.status(404).json({ message: 'some internal err' })
     }
-    
+
+}
+
+async function unfollowUserController(req, res) {
+    const celebrity = req.params.userid
+    const follower = req.user.id
+
+    const isCelebrityExists = await userModel.findById(celebrity)
+    const isFollowerExists = await userModel.findById(follower)
+
+    if (!isCelebrityExists) return res.status(401).json({ message: 'invalid user you want to unfollow' })
+    if (!isFollowerExists) return res.status(401).json({ message: 'invalid user you are ' })
+
+
+    const isFollow = await followModel.findOne({ followee: isCelebrityExists.username, follower: isFollowerExists.username })
+    if (!isFollow) return res.status(401).json({ message: 'you are not following this user' })
+    const deleted = await followModel.findByIdAndDelete(isFollow._id)
+    return res.status(200).json({ message: 'you have successfully unfollowed the user', user: deleted })
 }
 
 
-module.exports = { postController, postGetController, postDetailsController,followUserController };
+module.exports = { postController, postGetController, postDetailsController, followUserController, unfollowUserController };
