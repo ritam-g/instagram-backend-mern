@@ -12,6 +12,5 @@ postRoute.post('/', identifyUser, upload.single("image"), postController)
 postRoute.get('/', identifyUser, postGetController)
 postRoute.get('/:postid', identifyUser, postDetailsController)
 
-postRoute.post('/follow/:userid', identifyUser, followUserController)
-postRoute.post('/unfollow/:userid', identifyUser, unfollowUserController)
+
 module.exports = postRoute

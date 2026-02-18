@@ -9,6 +9,7 @@ app.use(cookieParser())
 
 const authRoute = require("./routes/auth.route");
 const postRoute = require("./routes/post.route");
+const userRoute = require("./routes/user.route");
 
 
 app.post('/',(req,res)=>{
@@ -19,4 +20,5 @@ app.post('/',(req,res)=>{
 
 app.use('/api/auth',authRoute)
 app.use('/api/posts',postRoute)
+app.use('/api/users',userRoute)
 module.exports=app
