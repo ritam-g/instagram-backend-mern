@@ -10,38 +10,63 @@ const bcrypt = require("bcryptjs")
  * @returns {void} - Calls next() on success, or sends JSON error response on failure
  */
 async function registerController(req, res, next) {
-    const { username, email, password, bio, profileImage } = req.body
+  try {
+    const { username, email, password } = req.body;
+
+    // ✅ Validate fields
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        message: "All fields are required"
+      });
+    }
 
     const userExists = await userModel.findOne({
-        $or: [
-            { email },
-            { username }
-        ]
-    })
+      $or: [{ email }, { username }]
+    });
 
-    if (userExists) return res.status(409).json({
-        message: 'user already exists :->' + (userExists.email === email ? 'please change the email ' : 'please change the username ')
-    })
+    if (userExists) {
+      return res.status(409).json({
+        message:
+          "User already exists: " +
+          (userExists.email === email
+            ? "Please change the email"
+            : "Please change the username")
+      });
+    }
 
     const hashPassword = await bcrypt.hash(password, 10);
 
     const user = await userModel.create({
-        username, email, password: hashPassword, bio, profileImage
-    })
+      username,
+      email,
+      password: hashPassword
+    });
 
-    const token = jwt.sign({ id: user._id, username: username }, process.env.JWT_SECRET, { expiresIn: "1d" })
-    res.cookie('token', token)
+    const token = jwt.sign(
+      { id: user._id, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // change to true in production
+      sameSite: "lax"
+    });
 
     res.status(201).json({
-        message: 'user is created ',
-        user: {
-            username: user.username,
-            email: user.email,
-            bio: user.bio,
-            profileImage: user.profileImage,
-        }
-    })
+      message: "User created successfully",
+      user: {
+        username: user.username,
+        email: user.email
+      }
+    });
+
+  } catch (error) {
+    next(error);
+  }
 }
+
 
 /**
  * @param {Object}   req  - Express request object (must have `req.cookies.token`)
