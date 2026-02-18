@@ -3,6 +3,7 @@ const ImageKit = require('@imagekit/nodejs');
 
 const userModel = require("../model/user.model");
 const followModel = require("../model/follow.model");
+const likeModel = require("../model/like.model");
 
 const imagekit = new ImageKit({
     publicKey: "xxx",
@@ -116,6 +117,68 @@ async function postDetailsController(req, res) {
 }
 
 
+async function likePostController(req, res) {
+    try {
+        const postId = req.params.postid
+
+        const username = req.user.username
+
+        const post = await postModel.findById(postId)
+
+        const doubleTime = await likeModel.findOne({ post: postId, username })
+        if (doubleTime) return res.status(200).json({ message: 'you can like only 1 time' })
+        if (!post) {
+
+            return res.status(404).json({
+                message: "Post not found."
+            })
+        }
+
+        const like = await likeModel.create({
+            post: postId,
+            username
+        })
+
+        res.status(200).json({
+            message: "Post liked successfully.",
+            like
+        })
+    } catch (err) {
+        console.log(err);
+        return res.status(401).json({
+            message: 'post is not found'
+        })
+
+    }
+}
+
+async function unLikePostController(req, res) {
+    try {
+        const postId = req.params.postid
+        const username = req.user.username
+
+        const post = await postModel.findById(postId)
+
+        if (!post) return res.status(401).json({ message: "no post found" })
+
+        const isLike = await likeModel.findOne({ post: post._id })
+
+        if (!isLike) return res.status(401).json({ message: "please like first" })
+
+        const deltedLike = await likeModel.findByIdAndDelete(isLike._id)
+
+        return res.status(201).json({
+            message: 'you sucessfully unlike',
+            isLike
+        })
+
+    } catch (err) {
+        console.log(err.message, err);
+        res.status(404).json({ message: 'something went wrong ' })
+
+    }
+}
 
 
-module.exports = { postController, postGetController, postDetailsController };
+
+module.exports = { postController, postGetController, postDetailsController, likePostController, unLikePostController };
