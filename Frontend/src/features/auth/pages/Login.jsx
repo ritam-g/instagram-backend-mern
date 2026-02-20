@@ -1,7 +1,7 @@
 // Login.jsx
 import React, { useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../style/auth.scss";
 import { useAuth } from "../hooks/useAuth";
 
@@ -9,6 +9,7 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { handelLogin ,user } = useAuth()
+  const navigate=useNavigate()
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -20,7 +21,7 @@ function Login() {
     // console.log(respone);
     console.log(user);
     
-    
+    navigate('/')
 
   };
 
