@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken")
 const userModel = require("../model/user.model")
-const bcrypt = require("bcryptjs")
+const bcrypt = require("bcryptjs");
+const { acceptFollowRequestController } = require("./user.controller");
 
 /**
  * @param {Object}   req  - Express request object (must have `req.cookies.token`)
@@ -76,41 +77,62 @@ async function registerController(req, res, next) {
  * @returns {void} - Calls next() on success, or sends JSON error response on failure
  */
 async function loginController(req, res, next) {
-    const { username, email, password } = req.body
+  const { username, email, password } = req.body
 
-    const userExists = await userModel.findOne({
-        $or: [
-            { email },
-            { username }
-        ]
+  const userExists = await userModel.findOne({
+    $or: [
+      { email },
+      { username }
+    ]
+  })
+
+  if (!userExists) {
+    return res.status(404).json({ message: "user not exists" })
+  }
+
+  const resultPass = await bcrypt.compare(password, userExists.password)
+
+  if (!resultPass) return res.status(401).json({ message: 'password is invalid ' })
+
+  const token = jwt.sign(
+    { id: userExists._id, username: username },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  )
+
+  res.cookie("token", token)
+
+  res.status(200)
+    .json({
+      message: "User logged in successfully.",
+      user: {
+        username: userExists.username,
+        email: userExists.email,
+        bio: userExists.bio,
+        profileImage: userExists.profileImage
+      }
     })
-
-    if (!userExists) {
-        return res.status(404).json({ message: "user not exists" })
-    }
-
-    const resultPass = await bcrypt.compare(password, userExists.password)
-
-    if (!resultPass) return res.status(401).json({ message: 'password is invalid ' })
-
-    const token = jwt.sign(
-        { id: userExists._id, username: username },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-    )
-
-    res.cookie("token", token)
-
-    res.status(200)
-        .json({
-            message: "User logged in successfully.",
-            user: {
-                username: userExists.username,
-                email: userExists.email,
-                bio: userExists.bio,
-                profileImage: userExists.profileImage
-            }
-        })
 }
 
-module.exports = { registerController, loginController }
+/**
+ * @parms get me suer route
+ * @description get the user information 
+ */
+
+async function getmeUserController(req, res) {
+  try {
+    const userId = req.user.id
+    const user = await userModel.findById(userId)
+    if (!user) return res.status(404).json({ message: 'user not found' })
+    res.status(200).json({
+      username: user.username,
+      email: user.email,
+      bio: user.bio,
+      profileImage: user.profileImage
+    })
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+module.exports = { registerController, loginController ,getmeUserController}

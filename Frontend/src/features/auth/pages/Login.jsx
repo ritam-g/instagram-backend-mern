@@ -3,11 +3,12 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import "../style/auth.scss";
+import { useAuth } from "../hooks/useAuth";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const { handelLogin ,user } = useAuth()
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -15,17 +16,12 @@ function Login() {
       alert("Email and Password are required");
       return;
     }
+    const respone= await handelLogin(email, password)
+    // console.log(respone);
+    console.log(user);
+    
+    
 
-    try {
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/login",
-        { email, password },{withCredentials:true}
-      );
-
-      console.log(res.data);
-    } catch (error) {
-      console.error(error.response?.data || error.message);
-    }
   };
 
   return (

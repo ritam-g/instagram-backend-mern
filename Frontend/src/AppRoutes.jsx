@@ -7,11 +7,12 @@ import Register from './features/auth/pages/Register'
 function AppRoutes() {
     return (
         <main>
-            
+
             <BrowserRouter>
                 <Routes>
-                        <Route path='/login' element={<Login/>}/>
-                        <Route path='/register' element={<Register/>}/>
+                    <Route path='/' element={<h1>welcome brother</h1>} />
+                    <Route path='/login' element={<Login />} />
+                    <Route path='/register' element={<Register />} />
 
                 </Routes>
             </BrowserRouter>
