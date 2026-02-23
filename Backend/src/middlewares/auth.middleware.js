@@ -13,6 +13,7 @@ async function identifyUser(req, res, next) {
 
     try {
         // Verify token using secret key
+        //!id: user._id, username: user.username 
         decode = jwt.verify(token, process.env.JWT_SECRET)
     } catch (err) {
         console.log(err);

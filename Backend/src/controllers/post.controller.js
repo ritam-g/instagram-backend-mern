@@ -162,5 +162,23 @@ async function unLikePostController(req, res, next) {
         res.status(404).json({ message: 'something went wrong' })
     }
 }
-
-module.exports = { postController, postGetController, postDetailsController, likePostController, unLikePostController };
+/**
+ * @param {Object}   req  - Express request object (must have `req.cookies.token`)
+ * @param {Object}   res  - Express response object
+ *
+ */
+async function feedController(req,res) {
+    try {
+        const posts=await postModel.find().populate("user")
+        console.log('hit');
+        
+        return res.status(200).json({
+            posts:posts
+        })
+    } catch (err) {
+        console.log(err);
+        console.log('err');
+        
+    }
+}
+module.exports = { postController, postGetController, postDetailsController, likePostController, unLikePostController,feedController };

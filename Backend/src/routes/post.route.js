@@ -1,6 +1,6 @@
 // Post and interaction routes
 const express = require("express");
-const { postController, postGetController, postDetailsController, likePostController, unLikePostController } = require("../controllers/post.controller");
+const { postController, postGetController, postDetailsController, likePostController, unLikePostController, feedController } = require("../controllers/post.controller");
 const multer = require('multer');
 const identifyUser = require("../middlewares/auth.middleware");
 const { acceptFollowRequestController } = require("../controllers/user.controller");
@@ -26,4 +26,8 @@ postRoute.post('/unlike/:postid', identifyUser, unLikePostController)
 // POST /api/posts/:follweid - Accept/reject follow request
 postRoute.post('/:follweid', identifyUser, acceptFollowRequestController)
 
+
+// get all post in single fetch this private
+
+postRoute.get('/get/feed',identifyUser,feedController)
 module.exports = postRoute

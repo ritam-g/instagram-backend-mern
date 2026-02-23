@@ -84,7 +84,7 @@ async function loginController(req, res, next) {
       { email },
       { username }
     ]
-  })
+  }).select("+password")
 
   if (!userExists) {
     return res.status(404).json({ message: "user not exists" })

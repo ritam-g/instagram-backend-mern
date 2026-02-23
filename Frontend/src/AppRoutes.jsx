@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Login from './features/auth/pages/Login'
 import Register from './features/auth/pages/Register'
+import FeedPage from './features/post/pages/FeedPage'
 
 
 function AppRoutes() {
@@ -10,7 +11,7 @@ function AppRoutes() {
 
             <BrowserRouter>
                 <Routes>
-                    <Route path='/' element={<h1>welcome brother</h1>} />
+                    <Route path='/' element={<FeedPage/>} />
                     <Route path='/login' element={<Login />} />
                     <Route path='/register' element={<Register />} />
 
