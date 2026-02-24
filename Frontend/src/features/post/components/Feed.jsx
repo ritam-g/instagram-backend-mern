@@ -8,19 +8,10 @@ import {
 import "./feed.scss";
 
 function Feed({ feeds }) {
-  // Validation
-  if (!Array.isArray(feeds)) {
+  if (!Array.isArray(feeds) || feeds.length === 0) {
     return (
       <div className="feed-page">
         <div className="feed-empty">No posts available</div>
-      </div>
-    );
-  }
-
-  if (feeds.length === 0) {
-    return (
-      <div className="feed-page">
-        <div className="feed-empty">No posts yet</div>
       </div>
     );
   }
@@ -29,19 +20,15 @@ function Feed({ feeds }) {
     <div className="feed-page">
       <div className="feed">
         {feeds.map((post) => {
-          if (!post || !post._id || !post.imgUrl) return null;
+          console.log(post._id,post.isLiked);
+          
+          if (!post || !post._id ) return null;
 
-          const {
-            _id,
-            caption,
-            imgUrl,
-            user,
-            isLiked,
-          } = post;
+          const { _id, caption, imgUrl, user, isLiked } = post;
 
           return (
             <article className="post" key={_id}>
-              
+
               {/* USER HEADER */}
               <header className="post-header">
                 <div className="user">
@@ -49,13 +36,9 @@ function Feed({ feeds }) {
                     <img
                       src={
                         user?.profileImage ||
-                        "https://via.placeholder.com/40"
+                        "https://i.pravatar.cc/150?img=12"
                       }
                       alt="profile"
-                      onError={(e) =>
-                        (e.target.src =
-                          "https://via.placeholder.com/40")
-                      }
                     />
                   </div>
                   <span className="username">
@@ -66,14 +49,7 @@ function Feed({ feeds }) {
 
               {/* IMAGE */}
               <div className="post-image-wrapper">
-                <img
-                  src={imgUrl}
-                  alt="post"
-                  onError={(e) =>
-                    (e.target.src =
-                      "https://via.placeholder.com/500x500?text=Image+Unavailable")
-                  }
-                />
+                <img src={imgUrl} alt="post" />
               </div>
 
               {/* ACTIONS */}
