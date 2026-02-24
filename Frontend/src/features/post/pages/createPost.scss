@@ -1,0 +1,114 @@
+$bg: #fafafa;
+$white: #ffffff;
+$border: #dbdbdb;
+$text-dark: #262626;
+$text-light: #8e8e8e;
+$primary: #0095f6;
+$primary-hover: #1877f2;
+
+.create {
+  min-height: 100vh;
+  background: $bg;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+
+  &__card {
+    width: 100%;
+    max-width: 500px;
+    background: $white;
+    border: 1px solid $border;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+  }
+
+  &__title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: $text-dark;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__image-upload {
+    width: 100%;
+  }
+
+  &__upload-box {
+    width: 100%;
+    height: 280px;
+    border: 2px dashed $border;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    overflow: hidden;
+    transition: 0.3s ease;
+
+    &:hover {
+      border-color: $primary;
+      background: #f8f9ff;
+    }
+  }
+
+  &__placeholder {
+    color: $text-light;
+    font-size: 14px;
+  }
+
+  &__preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__field {
+    width: 100%;
+  }
+
+  &__textarea {
+    width: 100%;
+    border: 1px solid $border;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    transition: 0.2s ease;
+
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba(0, 149, 246, 0.1);
+    }
+  }
+
+  &__btn {
+    background: $primary;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    &:hover {
+      background: $primary-hover;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}

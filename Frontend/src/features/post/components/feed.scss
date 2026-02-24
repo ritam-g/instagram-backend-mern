@@ -6,14 +6,13 @@ $text-light: #8e8e8e;
 $like: #ed4956;
 
 .feed {
-  background: $bg;
+    background: $bg;
   min-height: 100vh;
-  padding: 20px 0;
+  padding: 100px 0 40px; // extra top padding for nav
 
   &__wrapper {
     max-width: 500px;
-    min-height: 100vh; 
-    margin: 0 auto;
+  margin: 0 auto;
   }
 
   &__empty {

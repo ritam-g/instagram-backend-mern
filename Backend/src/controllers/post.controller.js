@@ -26,6 +26,8 @@ async function postController(req, res, next) {
     let file = null
     try {
         file = await imagekit.files.upload({
+            //that multer file has multile data in req.file
+            //from there we takign only buffer for working purpose
             file: req.file.buffer.toString("base64"),
             fileName: "Test",
             folder: "/Instagram/posts"
