@@ -7,9 +7,7 @@ export function usePost() {
     async function getPostData() {
         try {
             setloading(true)
-            const data = await getAllPost()
-            
-            
+            const data = await getAllPost()  
             setfeed(data.posts)
         } catch (err) {
             console.log(err);
