@@ -169,8 +169,17 @@ async function unLikePostController(req, res, next) {
  */
 async function feedController(req,res) {
     try {
-        const posts=await postModel.find().populate("user")
-        console.log('hit');
+        const posts=await Promise.all((await postModel.find().populate("user").lean())
+        .map(async(post)=>{
+            // post is obj only 
+            const isLiked=await likeModel.findOne({
+                username:req.user.username,
+                post:post._id
+            })
+            post.isLiked=Boolean(isLiked)
+            return post
+        }))
+        
         
         return res.status(200).json({
             posts:posts
