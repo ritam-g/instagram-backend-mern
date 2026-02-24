@@ -77,7 +77,7 @@ async function registerController(req, res, next) {
  * @returns {void} - Calls next() on success, or sends JSON error response on failure
  */
 async function loginController(req, res, next) {
-  const { username, email, password } = req.body
+  let { username, email, password } = req.body
 
   const userExists = await userModel.findOne({
     $or: [
@@ -89,7 +89,7 @@ async function loginController(req, res, next) {
   if (!userExists) {
     return res.status(404).json({ message: "user not exists" })
   }
-
+  username = userExists.username
   const resultPass = await bcrypt.compare(password, userExists.password)
 
   if (!resultPass) return res.status(401).json({ message: 'password is invalid ' })
@@ -100,7 +100,10 @@ async function loginController(req, res, next) {
     { expiresIn: "1d" }
   )
 
-  res.cookie("token", token)
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: "lax",   // VERY IMPORTANT
+  })
 
   res.status(200)
     .json({
@@ -135,4 +138,4 @@ async function getmeUserController(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
-module.exports = { registerController, loginController ,getmeUserController}
+module.exports = { registerController, loginController, getmeUserController }

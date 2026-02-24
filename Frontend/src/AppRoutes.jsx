@@ -11,8 +11,8 @@ function AppRoutes() {
 
             <BrowserRouter>
                 <Routes>
-                    <Route path='/' element={<FeedPage/>} />
-                    <Route path='/login' element={<Login />} />
+                    <Route path='/' element={<Login />} />
+                    <Route path='/feed-page' element={<FeedPage/>} />
                     <Route path='/register' element={<Register />} />
 
                 </Routes>

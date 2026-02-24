@@ -1,107 +1,112 @@
-.feed-page {
-  min-height: 100vh;
-  background-color: #000;
-  display: flex;
-  justify-content: center;
-  padding: 40px 16px;
-}
+$bg: #fafafa;
+$white: #ffffff;
+$border: #dbdbdb;
+$text-dark: #262626;
+$text-light: #8e8e8e;
+$like: #ed4956;
 
 .feed {
-  width: 100%;
-  max-width: 500px;
-}
+  background: $bg;
+  min-height: 100vh;
+  padding: 20px 0;
 
-.feed-empty {
-  color: #888;
-  font-size: 1.2rem;
+  &__wrapper {
+    max-width: 500px;
+    min-height: 100vh; 
+    margin: 0 auto;
+  }
+
+  &__empty {
+    text-align: center;
+    color: $text-light;
+    font-size: 14px;
+  }
 }
 
 .post {
-  background: #111;
-  border: 1px solid #222;
+  background: $white;
+  border: 1px solid $border;
   border-radius: 12px;
-  margin-bottom: 28px;
-  overflow: hidden;
-  transition: transform 0.2s ease;
-  padding-block: 1rem 1rem;
-}
+  margin-bottom: 30px;
+  overflow-x: hidden;
+  transition: 0.3s ease;
+  height: 100%;
+  
+  
 
-.post:hover {
-  transform: translateY(-2px);
-}
+  &:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  }
 
-.post-header {
-  padding: 14px 16px;
-}
+  &__header {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    
+  }
 
-.user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-.avatar img {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-}
+  &__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 
-.username {
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
+  &__username {
+    font-weight: 600;
+    font-size: 14px;
+    color: $text-dark;
+  }
 
-.post-image-wrapper img {
-  width: 100%;
-  display: block;
-  object-fit: cover;
-}
+  &__image-container {
+    width: 100%;
+    background: #000;
+  }
 
-.post-actions {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px 16px;
-}
+  &__image {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+  }
 
-.left-actions {
-  display: flex;
-  gap: 16px;
-}
+  &__actions {
+    padding: 12px 16px;
+  }
 
-.icon-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
+  &__left-actions {
+    display: flex;
+    gap: 18px;
+  }
+
+  &__caption {
+    padding: 0 16px 16px 16px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  &__text {
+    margin-left: 6px;
+    font-weight: 400;
+  }
 }
 
 .icon {
-  font-size: 1.5rem;
-  color: #fff;
-  transition: transform 0.15s ease, color 0.15s ease;
-  
-}
+  font-size: 22px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  color: $text-dark;
 
-.icon-btn:hover .icon {
-  transform: scale(1.1);
-}
+  &:hover {
+    transform: scale(1.1);
+  }
 
-.liked {
-  color: #91676b;
-  
-  
-}
-
-.post-caption {
-  padding: 0 16px 16px 16px;
-  color: #fff;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-.caption-text {
-  margin-left: 6px;
-  font-weight: 400;
+  &.liked {
+    color: $like;
+  }
 }

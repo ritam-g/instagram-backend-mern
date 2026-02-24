@@ -21,7 +21,7 @@ function Login() {
     // console.log(respone);
     console.log(user);
     
-    navigate('/')
+    navigate('/feed-page')
 
   };
 

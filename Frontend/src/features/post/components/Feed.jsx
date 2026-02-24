@@ -1,92 +1,73 @@
 import React from "react";
-import {
-  FaHeart,
-  FaRegHeart,
-  FaRegComment,
-  FaRegBookmark,
-} from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaRegComment } from "react-icons/fa";
 import "./feed.scss";
 
 function Feed({ feeds }) {
-  if (!Array.isArray(feeds) || feeds.length === 0) {
+  if (!feeds || feeds.length === 0) {
     return (
-      <div className="feed-page">
-        <div className="feed-empty">No posts available</div>
+      <div className="feed">
+        <p className="feed__empty">No posts available</p>
       </div>
     );
   }
 
+console.log(feeds);
+
   return (
-    <div className="feed-page">
-      <div className="feed">
-        {feeds.map((post) => {
-          console.log(post._id,post.isLiked);
+    <div className="feed">
+      <div className="feed__wrapper ">
+        
+        {feeds.map((post) => (
           
-          if (!post || !post._id ) return null;
-
-          const { _id, caption, imgUrl, user, isLiked } = post;
-
-          return (
-            <article className="post" key={_id}>
-
-              {/* USER HEADER */}
-              <header className="post-header">
-                <div className="user">
-                  <div className="avatar">
-                    <img
-                      src={
-                        user?.profileImage ||
-                        "https://i.pravatar.cc/150?img=12"
-                      }
-                      alt="profile"
-                    />
-                  </div>
-                  <span className="username">
-                    {user?.username || "Unknown User"}
-                  </span>
-                </div>
-              </header>
-
-              {/* IMAGE */}
-              <div className="post-image-wrapper">
-                <img src={imgUrl} alt="post" />
+          <div className="post" key={post._id}>
+            
+            {/* HEADER */}
+            <div className="post__header">
+              <div className="post__user">
+                <img
+                  src={post.user?.profileImage ||'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+                  alt="profile"
+                  className="post__avatar"
+                />
+                <span className="post__username">
+                  {post.user?.username}
+                </span>
               </div>
+            </div>
 
-              {/* ACTIONS */}
-              <div className="post-actions">
-                <div className="left-actions">
-                  <button className="icon-btn">
-                    {isLiked ? (
-                      <FaHeart className="icon liked" />
-                    ) : (
-                      <FaRegHeart className="icon" />
-                    )}
-                  </button>
+            {/* IMAGE */}
+            <div className="post__image-container">
+              <img
+                src={post.imgUrl}
+                alt="post"
+                className="post__image"
+              />
+            </div>
 
-                  <button className="icon-btn">
-                    <FaRegComment className="icon" />
-                  </button>
-                </div>
-
-                <button className="icon-btn">
-                  <FaRegBookmark className="icon" />
-                </button>
+            {/* ACTIONS */}
+            <div className="post__actions">
+              <div className="post__left-actions">
+                {post.isLiked ? (
+                  <FaHeart className="icon liked" />
+                ) : (
+                  <FaRegHeart className="icon" />
+                )}
+                <FaRegComment className="icon" />
               </div>
+            </div>
 
-              {/* CAPTION */}
-              {caption && (
-                <div className="post-caption">
-                  <span className="username">
-                    {user?.username || "user"}
-                  </span>
-                  <span className="caption-text">
-                    {caption}
-                  </span>
-                </div>
-              )}
-            </article>
-          );
-        })}
+            {/* CAPTION */}
+            <div className="post__caption">
+              <span className="post__username">
+                {post.user?.username}
+              </span>
+              <span className="post__text">
+                {post.caption}
+              </span>
+            </div>
+
+          </div>
+        ))}
       </div>
     </div>
   );
