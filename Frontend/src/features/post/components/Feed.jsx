@@ -11,6 +11,8 @@ function Feed({ feeds }) {
     likePostHandeller,
     unlikePostHandeller,
     deletePostHandeller,
+    // followUserHandler,
+    // unfollowUserHandler,
     setfeed
   } = usePost();
 
@@ -41,12 +43,14 @@ function Feed({ feeds }) {
     }
   };
 
+
   return (
     <div className="feed">
       <div className="feed__wrapper">
 
         {feeds.map((post) => (
-
+          
+          
           <div className="post" key={post._id}>
 
             {/* HEADER */}
@@ -65,14 +69,37 @@ function Feed({ feeds }) {
                 </span>
               </div>
 
-              {post.isOwner && (
-                <button
-                  className="post__delete"
-                  onClick={() => handleDelete(post._id)}
-                >
-                  <FaTrash />
-                </button>
-              )}
+              <div className="post__header-actions">
+
+                {/* FOLLOW BUTTON (not owner only) */}
+                {!post.isOwner && (
+                  post.isFollowing ? (
+                    <button
+                      className="post__follow following"
+                      onClick={() => unfollowUserHandler(post.user._id)}
+                    >
+                      Following
+                    </button>
+                  ) : (
+                    <button
+                      className="post__follow"
+                      onClick={() => followUserHandler(post.user._id)}
+                    >
+                      Follow
+                    </button>
+                  )
+                )}
+
+                {/* DELETE BUTTON */}
+                {post.isOwner && (
+                  <button
+                    className="post__delete"
+                    onClick={() => handleDelete(post._id)}
+                  >
+                    <FaTrash />
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* IMAGE */}

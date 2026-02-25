@@ -171,7 +171,8 @@ async function unLikePostController(req, res, next) {
  */
 async function feedController(req, res) {
   try {
-    const userId = req.user.id; // from JWT middleware
+    const userId = req.user.id;
+    const username = req.user.username;
 
     // 1️⃣ Get all posts
     const posts = await postModel
@@ -179,20 +180,31 @@ async function feedController(req, res) {
       .populate("user", "username profileImage")
       .lean();
 
-    // 2️⃣ Get all likes of current user at once
+    // 2️⃣ Get liked posts
     const userLikes = await likeModel.find({
-      username: req.user.username
+      username: username
     }).select("post");
 
     const likedPostIds = userLikes.map(like =>
       like.post.toString()
     );
 
-    // 3️⃣ Add isLiked + isOwner
+    // 3️⃣ Get accepted followings of current user
+    const followings = await followModel.find({
+      follower: username,
+      status: "accepted"
+    }).select("followee");
+
+    const followingUsernames = followings.map(f =>
+      f.followee
+    );
+
+    // 4️⃣ Add flags
     const finalPosts = posts.map(post => ({
       ...post,
       isLiked: likedPostIds.includes(post._id.toString()),
-      isOwner: post.user._id.toString() === userId
+      isOwner: post.user._id.toString() === userId,
+      isFollowing: followingUsernames.includes(post.user.username)
     }));
 
     return res.status(200).json({
