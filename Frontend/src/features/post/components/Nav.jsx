@@ -33,6 +33,12 @@ function Nav() {
           >
             Create
           </Link>
+          <Link
+            to="/"
+            className={`nav__link `}
+          >
+            Login
+          </Link>
 
           <div className="nav__avatar">
             <img

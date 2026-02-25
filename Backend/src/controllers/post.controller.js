@@ -169,27 +169,53 @@ async function unLikePostController(req, res, next) {
  * @param {Object}   res  - Express response object
  *
  */
-async function feedController(req,res) {
+async function feedController(req, res) {
     try {
-        const posts=await Promise.all((await postModel.find().populate("user").lean())
-        .map(async(post)=>{
-            // post is obj only 
-            const isLiked=await likeModel.findOne({
-                username:req.user.username,
-                post:post._id
-            })
-            post.isLiked=Boolean(isLiked)
-            return post
-        }))
-        
-        
+        const posts = await Promise.all((await postModel.find().populate("user").lean())
+            .map(async (post) => {
+                // post is obj only 
+                const isLiked = await likeModel.findOne({
+                    username: req.user.username,
+                    post: post._id
+                })
+                post.isLiked = Boolean(isLiked)
+                return post
+            }))
+
+
         return res.status(200).json({
-            posts:posts
+            posts: posts
         })
     } catch (err) {
         console.log(err);
         console.log('err');
-        
+
     }
 }
-module.exports = { postController, postGetController, postDetailsController, likePostController, unLikePostController,feedController };
+/**
+ * @async 
+ * @default it will delete post id 
+ */
+
+async function deltePostController(req, res) {
+    const postid = req.params.postid
+    const post = await postModel.findOne({
+        _id: postid
+    })
+    if (!post) {
+        return res.status(401).json({
+            message: 'your unothorize'
+        })
+    }
+    if (post.user.toString() !== req.user.id) {
+        return res.status(401).json({
+            message: 'you are not authorize'
+        })
+    }
+
+    const deltedPost = postModel.findByIdAndDelete(post._id)
+    return res.status(201).json({
+        message: 'post is delted'
+    })
+}
+module.exports = { deltePostController, postController, postGetController, postDetailsController, likePostController, unLikePostController, feedController };

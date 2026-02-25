@@ -19,10 +19,14 @@ export async function createPost(image, caption) {
 
 }
 export async function likePost(postId) {
-   const res= await api.post(`/like/${postId}`)
-   return res.data
+    const res = await api.post(`/like/${postId}`)
+    return res.data
 }
 export async function unlikePost(postId) {
-   const res= await api.post(`/unlike/${postId}`)
-   return res.data
+    const res = await api.post(`/unlike/${postId}`)
+    return res.data
+}
+export async function deltePost(postid) {
+    const res = await api.post(`/${postid}`)
+    return res.data
 }

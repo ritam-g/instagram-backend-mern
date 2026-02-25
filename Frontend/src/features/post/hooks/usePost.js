@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { postContext } from "../context/PostProvider";
-import { createPost, getAllPost ,likePost, unlikePost} from "../services/post.api";
+import { createPost, deltePost, getAllPost ,likePost, unlikePost} from "../services/post.api";
 
 export function usePost() {
     const { loading, setloading, post, setpost, feed, setfeed } = useContext(postContext)
@@ -33,7 +33,11 @@ export function usePost() {
        await unlikePost(postId)
        await getPostData()
     }
-    return { getPostData, post,unlikePostHandeller,likePostHandeller, feed,setfeed, loading,createPostHandeller }
+    async function deletePostHandeller(postid) {
+       const res= await deltePost(postid)
+       return res.message
+    }
+    return { getPostData,deletePostHandeller, post,unlikePostHandeller,likePostHandeller, feed,setfeed, loading,createPostHandeller }
 }
 
 

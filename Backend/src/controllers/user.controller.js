@@ -1,4 +1,5 @@
 const followModel = require("../model/follow.model");
+const postModel = require("../model/post.model");
 const userModel = require("../model/user.model");
 
 /**
