@@ -38,7 +38,7 @@ app.use('/api/users', userRoute)
 app.use(express.static(path.join(__dirname, '..', 'public')))
 
 // ✅ Wildcard comes LAST — sends index.html for any non-API route (React router support)
-app.use('*/{*any}', (req, res) => {
+app.use('/{*any}', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'))
 })
 
