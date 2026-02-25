@@ -1,6 +1,4 @@
-// Login.jsx
 import React, { useState } from "react";
-import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import "../style/auth.scss";
 import { useAuth } from "../hooks/useAuth";
@@ -8,47 +6,73 @@ import { useAuth } from "../hooks/useAuth";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { handelLogin ,user } = useAuth()
-  const navigate=useNavigate()
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const { handelLogin } = useAuth();
+  const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!email || !password) {
-      alert("Email and Password are required");
+      setError("Email and password are required.");
       return;
     }
-    const respone= await handelLogin(email, password)
-    // console.log(respone);
-    console.log(user);
-    
-    navigate('/feed-page')
 
+    try {
+      setLoading(true);
+      setError("");
+
+      await handelLogin(email, password);
+
+      navigate("/feed-page");
+    } catch (err) {
+      setError("Invalid credentials. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="auth">
       <div className="auth__card">
-        <h2>Login</h2>
+        <div className="auth__logo">SocialApp</div>
+
+        <h2>Welcome Back</h2>
+        <p className="auth__subtitle">
+          Sign in to continue
+        </p>
 
         <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          {error && <div className="auth__error">{error}</div>}
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="auth__input-group">
+            <input
+              type="email"
+              placeholder=" "
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <label>Email</label>
+          </div>
 
-          <button type="submit">Login</button>
+          <div className="auth__input-group">
+            <input
+              type="password"
+              placeholder=" "
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <label>Password</label>
+          </div>
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Signing in..." : "Login"}
+          </button>
         </form>
 
-        <p>
+        <p className="auth__footer">
           Don’t have an account?
           <Link to="/register"> Register</Link>
         </p>

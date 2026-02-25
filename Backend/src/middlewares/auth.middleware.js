@@ -16,10 +16,10 @@ async function identifyUser(req, res, next) {
         //!id: user._id, username: user.username 
         decode = jwt.verify(token, process.env.JWT_SECRET)
     } catch (err) {
-        console.log(err);
-        return res.status(404).json({
-            message: err.message,
-            message2: 'token is invalid'
+        console.error("Auth Middleware Error:", err.message);
+        return res.status(401).json({
+            message: 'Authentication failed: Invalid or expired token',
+            error: err.message
         })
     }
 

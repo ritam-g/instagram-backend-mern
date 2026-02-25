@@ -17,231 +17,226 @@ const imagekit = new ImageKit({
  *
  * @returns {void} - Calls next() on success, or sends JSON error response on failure
  */
-async function postController(req, res, next) {
-    const { caption } = req.body
-    let user = await userModel.findOne({ _id: req.user.id })
-
-    if (!user) return res.status(401).json({ message: "user is unauthorized" })
-
-    let file = null
-    try {
-        file = await imagekit.files.upload({
-            //that multer file has multile data in req.file
-            //from there we takign only buffer for working purpose
-            file: req.file.buffer.toString("base64"),
-            fileName: "Test",
-            folder: "/Instagram/posts"
-        });
-    } catch (err) {
-        res.status(404).json({ message: 'something went wrong' })
-    }
-
-    const post = await postModel.create({
-        caption, imgUrl: file.url, user: user._id
-    })
-
-    return res.status(201).json({
-        message: 'post is created',
-        post
-    })
-}
-
 /**
- * @param {Object}   req  - Express request object (must have `req.cookies.token`)
- * @param {Object}   res  - Express response object
- * @param {Function} next - Callback to pass control to the next middleware/controller
- *
- * @returns {void} - Calls next() on success, or sends JSON error response on failure
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
  */
-async function postGetController(req, res, next) {
-    const { id } = req.user
-    const userAllPost = await postModel.find({ user: id })
-
-    if (!userAllPost) return res.status(401).json({ message: 'no post is found' })
-
-    return res.status(200).json({
-        message: 'all post fetch', userAllPost
-    })
-}
-
-/**
- * @param {Object}   req  - Express request object (must have `req.cookies.token`)
- * @param {Object}   res  - Express response object
- * @param {Function} next - Callback to pass control to the next middleware/controller
- *
- * @returns {void} - Calls next() on success, or sends JSON error response on failure
- */
-async function postDetailsController(req, res, next) {
+async function postController(req, res) {
     try {
-        const postId = req.params.postid;
-        const post = await postModel.findById(postId);
+        const { caption } = req.body;
+        const userId = req.user.id;
 
-        if (!post) {
-            return res.status(404).json({ message: "Post not found." });
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(401).json({ message: "Unauthorized: User not found" });
         }
 
-        const isOwner = post.user.toString() === req.user.id;
+        if (!req.file) {
+            return res.status(400).json({ message: "Image is required" });
+        }
 
-        if (!isOwner) {
-            return res.status(403).json({ message: "Forbidden. You are not authorized to view this post." });
+        let file = null;
+        try {
+            file = await imagekit.files.upload({
+                file: req.file.buffer.toString("base64"),
+                fileName: `post_${Date.now()}`,
+                folder: "/Instagram/posts"
+            });
+        } catch (uploadErr) {
+            console.error("ImageKit Error:", uploadErr);
+            return res.status(500).json({ message: "Failed to upload image" });
+        }
+
+        const post = await postModel.create({
+            caption,
+            imgUrl: file.url,
+            user: userId
+        });
+
+        return res.status(201).json({
+            message: 'Post created successfully',
+            post
+        });
+
+    } catch (err) {
+        console.error("Create Post Error:", err);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+/**
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+async function postGetController(req, res) {
+    try {
+        const { id } = req.user;
+        const userAllPost = await postModel.find({ user: id }).sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            message: 'User posts fetched successfully',
+            userAllPost
+        });
+    } catch (err) {
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+/**
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+async function postDetailsController(req, res) {
+    try {
+        const { postid } = req.params;
+        const post = await postModel.findById(postid).populate("user", "username profileImage");
+
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
         }
 
         return res.status(200).json({
-            message: "Post fetched successfully.",
+            message: "Post fetched successfully",
             post
         });
 
     } catch (error) {
-        return res.status(500).json({
-            message: "Internal server error.",
-            error: error.message
-        });
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
 
 /**
- * @param {Object}   req  - Express request object (must have `req.cookies.token`)
- * @param {Object}   res  - Express response object
- * @param {Function} next - Callback to pass control to the next middleware/controller
- *
- * @returns {void} - Calls next() on success, or sends JSON error response on failure
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
  */
-async function likePostController(req, res, next) {
+async function likePostController(req, res) {
     try {
-        const postId = req.params.postid
-        const username = req.user.username
-        const post = await postModel.findById(postId)
+        const { postid } = req.params;
+        const userId = req.user.id;
 
-        const doubleTime = await likeModel.findOne({ post: postId, username })
-        if (doubleTime) return res.status(200).json({ message: 'you can like only 1 time' })
-
+        const post = await postModel.findById(postid);
         if (!post) {
-            return res.status(404).json({ message: "Post not found." })
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        const alreadyLiked = await likeModel.findOne({ post: postid, userId });
+        if (alreadyLiked) {
+            return res.status(400).json({ message: 'You have already liked this post' });
         }
 
         const like = await likeModel.create({
-            post: postId,
-            username
-        })
+            post: postid,
+            userId
+        });
 
-        res.status(200).json({
-            message: "Post liked successfully.",
+        return res.status(200).json({
+            message: "Post liked successfully",
             like
-        })
+        });
     } catch (err) {
-        console.log(err);
-        return res.status(401).json({ message: 'post is not found' })
+        console.error("Like Error:", err);
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
 
 /**
- * @param {Object}   req  - Express request object (must have `req.cookies.token`)
- * @param {Object}   res  - Express response object
- * @param {Function} next - Callback to pass control to the next middleware/controller
- *
- * @returns {void} - Calls next() on success, or sends JSON error response on failure
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
  */
-async function unLikePostController(req, res, next) {
+async function unLikePostController(req, res) {
     try {
-        const postId = req.params.postid
-        const username = req.user.username
-        const post = await postModel.findById(postId)
+        const { postid } = req.params;
+        const userId = req.user.id;
 
-        if (!post) return res.status(401).json({ message: "no post found" })
+        const deletedLike = await likeModel.findOneAndDelete({ post: postid, userId });
 
-        const isLike = await likeModel.findOne({ post: post._id })
-        if (!isLike) return res.status(401).json({ message: "please like first" })
+        if (!deletedLike) {
+            return res.status(400).json({ message: "You haven't liked this post yet" });
+        }
 
-        const deltedLike = await likeModel.findByIdAndDelete(isLike._id)
-
-        return res.status(201).json({
-            message: 'you sucessfully unlike',
-            deltedLike
-        })
+        return res.status(200).json({
+            message: 'Post unliked successfully'
+        });
 
     } catch (err) {
-        console.log(err.message, err);
-        res.status(404).json({ message: 'something went wrong' })
+        console.error("Unlike Error:", err);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }
+
 /**
- * @param {Object}   req  - Express request object (must have `req.cookies.token`)
- * @param {Object}   res  - Express response object
- *
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
  */
 async function feedController(req, res) {
-  try {
-    const userId = req.user.id;
-    const username = req.user.username;
+    try {
+        const userId = req.user.id;
 
-    // 1️⃣ Get all posts
-    const posts = await postModel
-      .find()
-      .populate("user", "username profileImage")
-      .lean();
+        // 1️⃣ Get all posts (Ideally we would filter based on followings, but for now fetching all is fine for a small app)
+        const posts = await postModel
+            .find()
+            .populate("user", "username profileImage")
+            .sort({ createdAt: -1 })
+            .lean();
 
-    // 2️⃣ Get liked posts
-    const userLikes = await likeModel.find({
-      username: username
-    }).select("post");
+        // 2️⃣ Get current user's likes
+        const userLikes = await likeModel.find({ userId }).select("post");
+        const likedPostIds = new Set(userLikes.map(like => like.post.toString()));
 
-    const likedPostIds = userLikes.map(like =>
-      like.post.toString()
-    );
+        // 3️⃣ Get current user's followings
+        const followings = await followModel.find({
+            follower: userId,
+            status: "accepted"
+        }).select("followee");
+        const followedUserIds = new Set(followings.map(f => f.followee.toString()));
 
-    // 3️⃣ Get accepted followings of current user
-    const followings = await followModel.find({
-      follower: username,
-      status: "accepted"
-    }).select("followee");
+        // 4️⃣ Add flags
+        const finalPosts = posts.map(post => ({
+            ...post,
+            isLiked: likedPostIds.has(post._id.toString()),
+            isOwner: post.user._id.toString() === userId,
+            isFollowing: followedUserIds.has(post.user._id.toString())
+        }));
 
-    const followingUsernames = followings.map(f =>
-      f.followee
-    );
+        return res.status(200).json({
+            posts: finalPosts
+        });
 
-    // 4️⃣ Add flags
-    const finalPosts = posts.map(post => ({
-      ...post,
-      isLiked: likedPostIds.includes(post._id.toString()),
-      isOwner: post.user._id.toString() === userId,
-      isFollowing: followingUsernames.includes(post.user.username)
-    }));
-
-    return res.status(200).json({
-      posts: finalPosts
-    });
-
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      message: "Something went wrong"
-    });
-  }
+    } catch (err) {
+        console.error("Feed Error:", err);
+        return res.status(500).json({ message: "Something went wrong" });
+    }
 }
+
 /**
- * @async 
- * @default it will delete post id 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
  */
+async function deletePostController(req, res) {
+    try {
+        const { postid } = req.params;
+        const userId = req.user.id;
 
-async function deltePostController(req, res) {
-    const postid = req.params.postid
-    const post = await postModel.findOne({
-        _id: postid
-    })
-    if (!post) {
-        return res.status(401).json({
-            message: 'your unothorize'
-        })
-    }
-    if (post.user.toString() !== req.user.id) {
-        return res.status(401).json({
-            message: 'you are not authorize'
-        })
-    }
+        const post = await postModel.findById(postid);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
 
-    const deltedPost = postModel.findByIdAndDelete(post._id)
-    return res.status(201).json({
-        message: 'post is delted'
-    })
+        if (post.user.toString() !== userId) {
+            return res.status(403).json({ message: 'Not authorized to delete this post' });
+        }
+
+        await postModel.findByIdAndDelete(postid);
+        // Also cleanup likes
+        await likeModel.deleteMany({ post: postid });
+
+        return res.status(200).json({
+            message: 'Post deleted successfully'
+        });
+    } catch (err) {
+        console.error("Delete Error:", err);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 }
-module.exports = { deltePostController, postController, postGetController, postDetailsController, likePostController, unLikePostController, feedController };
+
+module.exports = { deletePostController, postController, postGetController, postDetailsController, likePostController, unLikePostController, feedController };

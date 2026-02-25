@@ -2,17 +2,21 @@ const mongoose = require("mongoose");
 
 const followSchema = new mongoose.Schema({
     follower: {
-        type: String
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user',
+        required: true
     },
     followee: {
-        type: String
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user',
+        required: true
     },
     status: {
         type: String,
-        default: 'pending',
+        default: 'accepted',
         enum: {
             values: ['pending', 'accepted', 'rejected'],
-            message: 'satause can only be "pending,accepted,rejected" '
+            message: 'status can only be "pending, accepted, rejected"'
         }
     }
 }, { timestamps: true })

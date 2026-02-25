@@ -38,7 +38,7 @@ const Register = () => {
           <button>Register</button>
         </form>
 
-        <p>Already have an account? <Link className='toggleAuthForm' to="/login">Login</Link></p>
+        <p>Already have an account? <Link className='toggleAuthForm' to="/">Login</Link></p>
       </div>
     </main>
   )

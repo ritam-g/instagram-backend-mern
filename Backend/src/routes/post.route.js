@@ -1,9 +1,8 @@
 // Post and interaction routes
 const express = require("express");
-const { postController, postGetController, postDetailsController, likePostController, unLikePostController, feedController, deltePostController } = require("../controllers/post.controller");
+const { postController, postGetController, postDetailsController, likePostController, unLikePostController, feedController, deletePostController } = require("../controllers/post.controller");
 const multer = require('multer');
 const identifyUser = require("../middlewares/auth.middleware");
-const { acceptFollowRequestController } = require("../controllers/user.controller");
 
 const upload = multer({ storage: multer.memoryStorage() })
 const postRoute = express.Router()
@@ -14,6 +13,9 @@ postRoute.post('/', identifyUser, upload.single("image"), postController)
 // GET /api/posts/ - Get all posts for logged-in user
 postRoute.get('/', identifyUser, postGetController)
 
+// GET /api/posts/feed - Get feed posts
+postRoute.get('/get/feed', identifyUser, feedController)
+
 // GET /api/posts/:postid - Get single post details
 postRoute.get('/:postid', identifyUser, postDetailsController)
 
@@ -23,14 +25,7 @@ postRoute.post('/like/:postid', identifyUser, likePostController)
 // POST /api/posts/unlike/:postid - Unlike a post
 postRoute.post('/unlike/:postid', identifyUser, unLikePostController)
 
-// POST /api/posts/:follweid - Accept/reject follow request
-postRoute.post('/:follweid', identifyUser, acceptFollowRequestController)
+// DELETE /api/posts/:postid - Delete the post
+postRoute.delete('/:postid', identifyUser, deletePostController)
 
-// POST /api/posts/:postid - delete the post
-postRoute.delete('/:postid', identifyUser,deltePostController)
-
-
-// get all post in single fetch this private
-
-postRoute.get('/get/feed',identifyUser,feedController)
 module.exports = postRoute

@@ -27,4 +27,10 @@ app.use('/api/auth', authRoute)
 app.use('/api/posts', postRoute)
 app.use('/api/users', userRoute)
 
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error("Unhandled Error:", err.message);
+    res.status(500).json({ message: "Internal server error", error: err.message });
+})
+
 module.exports = app

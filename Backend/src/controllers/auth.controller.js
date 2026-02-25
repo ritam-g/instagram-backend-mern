@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken")
 const userModel = require("../model/user.model")
 const bcrypt = require("bcryptjs");
-const { acceptFollowRequestController } = require("./user.controller");
 
 /**
  * @param {Object}   req  - Express request object (must have `req.cookies.token`)
@@ -77,36 +76,40 @@ async function registerController(req, res, next) {
  * @returns {void} - Calls next() on success, or sends JSON error response on failure
  */
 async function loginController(req, res, next) {
-  let { username, email, password } = req.body
+  try {
+    let { username, email, password } = req.body
 
-  const userExists = await userModel.findOne({
-    $or: [
-      { email },
-      { username }
-    ]
-  }).select("+password")
+    if (!password || (!email && !username)) {
+      return res.status(400).json({ message: "Email/username and password are required" })
+    }
 
-  if (!userExists) {
-    return res.status(404).json({ message: "user not exists" })
-  }
-  username = userExists.username
-  const resultPass = await bcrypt.compare(password, userExists.password)
+    const userExists = await userModel.findOne({
+      $or: [
+        ...(email ? [{ email }] : []),
+        ...(username ? [{ username }] : [])
+      ]
+    }).select("+password")
 
-  if (!resultPass) return res.status(401).json({ message: 'password is invalid ' })
+    if (!userExists) {
+      return res.status(404).json({ message: "User not found" })
+    }
 
-  const token = jwt.sign(
-    { id: userExists._id, username: username },
-    process.env.JWT_SECRET,
-    { expiresIn: "1d" }
-  )
+    const resultPass = await bcrypt.compare(password, userExists.password)
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    sameSite: "lax",   // VERY IMPORTANT
-  })
+    if (!resultPass) return res.status(401).json({ message: 'Invalid password' })
 
-  res.status(200)
-    .json({
+    const token = jwt.sign(
+      { id: userExists._id, username: userExists.username },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    )
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+    })
+
+    res.status(200).json({
       message: "User logged in successfully.",
       user: {
         username: userExists.username,
@@ -115,6 +118,10 @@ async function loginController(req, res, next) {
         profileImage: userExists.profileImage
       }
     })
+  } catch (error) {
+    console.error("Login Error:", error)
+    next(error)
+  }
 }
 
 /**

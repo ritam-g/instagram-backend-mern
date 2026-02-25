@@ -11,8 +11,8 @@ function Feed({ feeds }) {
     likePostHandeller,
     unlikePostHandeller,
     deletePostHandeller,
-    // followUserHandler,
-    // unfollowUserHandler,
+    followUserHandler,
+    unfollowUserHandler,
     setfeed
   } = usePost();
 
@@ -76,14 +76,14 @@ function Feed({ feeds }) {
                   post.isFollowing ? (
                     <button
                       className="post__follow following"
-                      onClick={() => unfollowUserHandler(post.user._id)}
+                      onClick={() => unfollowUserHandler(post.user.username)}
                     >
                       Following
                     </button>
                   ) : (
                     <button
                       className="post__follow"
-                      onClick={() => followUserHandler(post.user._id)}
+                      onClick={() => followUserHandler(post.user.username)}
                     >
                       Follow
                     </button>

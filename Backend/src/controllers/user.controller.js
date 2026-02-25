@@ -9,104 +9,116 @@ const userModel = require("../model/user.model");
  *
  * @returns {void} - Calls next() on success, or sends JSON error response on failure
  */
-async function followUserController(req, res, next) {
+/**
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+async function followUserController(req, res) {
     try {
-        const followerUsername = req.user.username
-        const followeeUsername = req.params.username
+        const followerId = req.user.id;
+        const followeeUsername = req.params.username;
 
-        if (followeeUsername === followerUsername) {
-            return res.status(400).json({ message: "You cannot follow yourself" })
+        const followee = await userModel.findOne({ username: followeeUsername });
+        if (!followee) {
+            return res.status(404).json({ message: "User not found" });
         }
 
-        const user = await userModel.findOne({ username: followeeUsername })
-        if (!user) {
-            return res.status(404).json({ message: "User you are trying to follow does not exist" })
+        if (followee._id.toString() === followerId) {
+            return res.status(400).json({ message: "You cannot follow yourself" });
         }
 
-        const isAlreadyFollowing = await followModel.findOne({
-            followee: followeeUsername,
-            follower: followerUsername
-        })
+        const existingFollow = await followModel.findOne({
+            follower: followerId,
+            followee: followee._id
+        });
 
-        if (isAlreadyFollowing) {
-            return res.status(400).json({ message: `You are already following ${followeeUsername}` })
+        if (existingFollow) {
+            return res.status(400).json({ message: `You already follow ${followeeUsername}` });
         }
 
         const followRecord = await followModel.create({
-            followee: followeeUsername,
-            follower: followerUsername,
-            status: 'pending'
-        })
+            follower: followerId,
+            followee: followee._id,
+            status: 'accepted' // Default to direct follow for simple clone
+        });
 
         return res.status(201).json({
-            message: `follw request is sent to ${followeeUsername}`,
+            message: `Successfully followed ${followeeUsername}`,
             follow: followRecord
-        })
+        });
 
     } catch (err) {
-        return res.status(500).json({ message: 'Something went wrong' })
+        console.error("Follow Error:", err);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }
 
 /**
- * @param {Object}   req  - Express request object (must have `req.cookies.token`)
- * @param {Object}   res  - Express response object
- * @param {Function} next - Callback to pass control to the next middleware/controller
- *
- * @returns {void} - Calls next() on success, or sends JSON error response on failure
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
  */
-async function unfollowUserController(req, res, next) {
-    const followerUsername = req.user.username
-    const followeeUsername = req.params.username
-
-    const isFollowe = await followModel.findOne({ follower: followerUsername, followee: followeeUsername })
-
-    if (!isFollowe) {
-        return res.status(200).json({ message: `You are not following ${followeeUsername}` })
-    }
-
-    await followModel.findByIdAndDelete(isFollowe._id)
-
-    res.status(200).json({ message: `You have unfollowed ${followeeUsername}` })
-}
-
-/**
- * @param {Object}   req  - Express request object (must have `req.cookies.token`)
- * @param {Object}   res  - Express response object
- * @param {Function} next - Callback to pass control to the next middleware/controller
- *
- * @returns {void} - Calls next() on success, or sends JSON error response on failure
- */
-async function acceptFollowRequestController(req, res, next) {
+async function unfollowUserController(req, res) {
     try {
-        const follweid = req.params.follweid
-        const { response } = req.body
+        const followerId = req.user.id;
+        const followeeUsername = req.params.username;
 
-        if (response !== "accepted" && response !== "rejected") {
-            return res.status(200).json({
-                message: "'first choose 'accepted','rejected''",
-                statusbar: 'faild'
-            })
+        const followee = await userModel.findOne({ username: followeeUsername });
+        if (!followee) {
+            return res.status(404).json({ message: "User not found" });
         }
 
-        const follow = await followModel.findById(follweid)
+        const deletedFollow = await followModel.findOneAndDelete({
+            follower: followerId,
+            followee: followee._id
+        });
 
-        if (response === "accepted") {
-            follow.status = 'accepted'
-            await follow.save()
-            return res.status(201).json({ message: 'you have new follower' })
-        }
-        else if (response === "rejected") {
-            follow.status = 'rejected'
-            await follow.save()
-            return res.status(201).json({ message: 'you rejected' })
+        if (!deletedFollow) {
+            return res.status(400).json({ message: `You are not following ${followeeUsername}` });
         }
 
+        return res.status(200).json({ message: `Successfully unfollowed ${followeeUsername}` });
     } catch (err) {
-        return res.status(404).json({ message: 'someting went wrong' })
+        console.error("Unfollow Error:", err);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }
 
+/**
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+async function acceptFollowRequestController(req, res) {
+    try {
+        const { requestId } = req.params;
+        const { response } = req.body;
 
+        if (!["accepted", "rejected"].includes(response)) {
+            return res.status(400).json({ message: "Invalid response type. Use 'accepted' or 'rejected'" });
+        }
 
-module.exports = { followUserController, unfollowUserController, acceptFollowRequestController }
+        const follow = await followModel.findById(requestId);
+        if (!follow) {
+            return res.status(404).json({ message: "Follow request not found" });
+        }
+
+        // Verify that the person accepting is the followee
+        if (follow.followee.toString() !== req.user.id) {
+            return res.status(403).json({ message: "Not authorized to respond to this request" });
+        }
+
+        follow.status = response;
+        await follow.save();
+
+        return res.status(200).json({
+            message: `Follow request ${response}`,
+            status: response
+        });
+
+    } catch (err) {
+        console.error("Accept Follow Error:", err);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+module.exports = { followUserController, unfollowUserController, acceptFollowRequestController };
+

@@ -11,7 +11,7 @@ const api = axios.create({
  * @param {*} password 
  * @returns new user data 
  */
-async function register(username, email, password) {
+async function register(username='defalut', email, password) {
 
     try {
         const res = await api.post('/register', { username, email, password })
