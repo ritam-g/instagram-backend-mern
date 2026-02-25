@@ -1,17 +1,19 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import axios from 'axios'
 import "../style/register.scss"
+import { useAuth } from '../hooks/useAuth'
 const Register = () => {
 
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-
+const{handelRegiester}=useAuth()
+const navigate=useNavigate()
   async function handleSubmit(e) {
     e.preventDefault()
-
-    
+    await handelRegiester(username,email,password)
+    navigate('/feed-page')
   }
 
 
