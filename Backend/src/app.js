@@ -12,7 +12,7 @@ app.use(express.static("./public"))
 // CORS
 const allowedOrigins = [
     "http://localhost:5173",
-    process.env.FRONTEND_URL
+    "https://banking-backend-system-t1aw.onrender.com"
 ].filter(Boolean);
 
 app.use(
