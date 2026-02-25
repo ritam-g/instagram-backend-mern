@@ -1,9 +1,12 @@
 import axios from 'axios'
 
+// Use VITE_API_URL env var (set in .env.local for dev, or Render env for prod)
+// Falls back to the deployed backend URL if env var is not set
 const api = axios.create({
-    baseURL: "http://localhost:3000",
+    baseURL: import.meta.env.VITE_API_URL || 'https://instagram-backend-mern.onrender.com',
     withCredentials: true
 })
+
 export async function getAllPost() {
     try {
         const res = await api.get('/api/posts/get/feed');

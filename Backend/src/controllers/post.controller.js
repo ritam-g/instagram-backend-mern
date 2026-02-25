@@ -194,8 +194,8 @@ async function feedController(req, res) {
         const finalPosts = posts.map(post => ({
             ...post,
             isLiked: likedPostIds.has(post._id.toString()),
-            isOwner: post.user._id.toString() === userId,
-            isFollowing: followedUserIds.has(post.user._id.toString())
+            isOwner: post.user ? post.user._id.toString() === userId : false,
+            isFollowing: post.user ? followedUserIds.has(post.user._id.toString()) : false
         }));
 
         return res.status(200).json({

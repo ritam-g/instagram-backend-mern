@@ -1,7 +1,8 @@
 import axios from 'axios'
 
+// Use VITE_API_URL env var (set in .env.local for dev, or Render env for prod)
 const api = axios.create({
-    baseURL: 'http://localhost:3000/api/auth',
+    baseURL: import.meta.env.VITE_API_URL || 'https://instagram-backend-mern.onrender.com',
     withCredentials: true
 })
 /**
@@ -11,10 +12,10 @@ const api = axios.create({
  * @param {*} password 
  * @returns new user data 
  */
-async function register(username='defalut', email, password) {
+async function register(username = 'defalut', email, password) {
 
     try {
-        const res = await api.post('/register', { username, email, password })
+        const res = await api.post('/api/auth/register', { username, email, password })
         return res.data
 
     } catch (err) {
@@ -30,7 +31,7 @@ async function register(username='defalut', email, password) {
  */
 async function login(email, password) {
     try {
-        const res = await api.post('/login', { email, password })
+        const res = await api.post('/api/auth/login', { email, password })
         return res.data
 
     } catch (err) {
@@ -43,7 +44,7 @@ async function login(email, password) {
  */
 async function getMe() {
     try {
-        const res = await api.get('/get-me')
+        const res = await api.get('/api/auth/get-me')
         return res.data
     } catch (err) {
         throw err
