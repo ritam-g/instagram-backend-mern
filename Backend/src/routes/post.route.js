@@ -27,7 +27,7 @@ postRoute.post('/unlike/:postid', identifyUser, unLikePostController)
 postRoute.post('/:follweid', identifyUser, acceptFollowRequestController)
 
 // POST /api/posts/:postid - delete the post
-postRoute.post('/:postid', identifyUser,deltePostController)
+postRoute.delete('/:postid', identifyUser,deltePostController)
 
 
 // get all post in single fetch this private

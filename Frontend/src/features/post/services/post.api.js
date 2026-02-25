@@ -27,6 +27,6 @@ export async function unlikePost(postId) {
     return res.data
 }
 export async function deltePost(postid) {
-    const res = await api.post(`/${postid}`)
+    const res = await api.delete(`/${postid}`)
     return res.data
 }

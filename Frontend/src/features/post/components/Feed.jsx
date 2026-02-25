@@ -1,9 +1,19 @@
 import React from "react";
-import { FaHeart, FaRegHeart, FaRegComment } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaRegComment, FaTrash } from "react-icons/fa";
 import "./feed.scss";
 import { usePost } from "../hooks/usePost";
+import toast from "react-hot-toast";
 
 function Feed({ feeds }) {
+
+  // ✅ ALWAYS call hooks at top
+  const {
+    likePostHandeller,
+    unlikePostHandeller,
+    deletePostHandeller,
+    setfeed
+  } = usePost();
+
   if (!feeds || feeds.length === 0) {
     return (
       <div className="feed">
@@ -12,12 +22,28 @@ function Feed({ feeds }) {
     );
   }
 
-  console.log(feeds);
-const {likePostHandeller,unlikePostHandeller}=usePost()
+  // ✅ Delete handler
+  const handleDelete = async (postId) => {
+    const confirmDelete = window.confirm("Delete this post?");
+    if (!confirmDelete) return;
+
+    try {
+      const message = await deletePostHandeller(postId);
+
+      // remove post from UI
+      setfeed((prev) =>
+        prev.filter((post) => post._id !== postId)
+      );
+
+      toast.success(message || "Post deleted 🗑️");
+    } catch (error) {
+      toast.error("Delete failed ❌");
+    }
+  };
 
   return (
     <div className="feed">
-      <div className="feed__wrapper ">
+      <div className="feed__wrapper">
 
         {feeds.map((post) => (
 
@@ -27,7 +53,10 @@ const {likePostHandeller,unlikePostHandeller}=usePost()
             <div className="post__header">
               <div className="post__user">
                 <img
-                  src={post.user?.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+                  src={
+                    post.user?.profileImage ||
+                    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde"
+                  }
                   alt="profile"
                   className="post__avatar"
                 />
@@ -35,6 +64,15 @@ const {likePostHandeller,unlikePostHandeller}=usePost()
                   {post.user?.username}
                 </span>
               </div>
+
+              {post.isOwner && (
+                <button
+                  className="post__delete"
+                  onClick={() => handleDelete(post._id)}
+                >
+                  <FaTrash />
+                </button>
+              )}
             </div>
 
             {/* IMAGE */}
@@ -50,26 +88,36 @@ const {likePostHandeller,unlikePostHandeller}=usePost()
             <div className="post__actions">
               <div className="post__left-actions">
                 {post.isLiked ? (
-                  <FaHeart className="icon liked" onClick={()=>{unlikePostHandeller(post._id)}} />
+                  <FaHeart
+                    className="icon liked"
+                    onClick={() => unlikePostHandeller(post._id)}
+                  />
                 ) : (
-                  <FaRegHeart className="icon"  onClick={()=>{likePostHandeller(post._id)}}/>
+                  <FaRegHeart
+                    className="icon"
+                    onClick={() => likePostHandeller(post._id)}
+                  />
                 )}
                 <FaRegComment className="icon" />
               </div>
             </div>
 
             {/* CAPTION */}
-            <div className="post__caption">
-              <span className="post__username">
-                {post.user?.username}
-              </span>
-              <span className="post__text">
-                {post.caption}
-              </span>
-            </div>
+            {post.caption && (
+              <div className="post__caption">
+                <span className="post__username">
+                  {post.user?.username}
+                </span>
+                <span className="post__text">
+                  {post.caption}
+                </span>
+              </div>
+            )}
 
           </div>
+
         ))}
+
       </div>
     </div>
   );

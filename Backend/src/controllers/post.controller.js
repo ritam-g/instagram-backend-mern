@@ -170,27 +170,41 @@ async function unLikePostController(req, res, next) {
  *
  */
 async function feedController(req, res) {
-    try {
-        const posts = await Promise.all((await postModel.find().populate("user").lean())
-            .map(async (post) => {
-                // post is obj only 
-                const isLiked = await likeModel.findOne({
-                    username: req.user.username,
-                    post: post._id
-                })
-                post.isLiked = Boolean(isLiked)
-                return post
-            }))
+  try {
+    const userId = req.user.id; // from JWT middleware
 
+    // 1️⃣ Get all posts
+    const posts = await postModel
+      .find()
+      .populate("user", "username profileImage")
+      .lean();
 
-        return res.status(200).json({
-            posts: posts
-        })
-    } catch (err) {
-        console.log(err);
-        console.log('err');
+    // 2️⃣ Get all likes of current user at once
+    const userLikes = await likeModel.find({
+      username: req.user.username
+    }).select("post");
 
-    }
+    const likedPostIds = userLikes.map(like =>
+      like.post.toString()
+    );
+
+    // 3️⃣ Add isLiked + isOwner
+    const finalPosts = posts.map(post => ({
+      ...post,
+      isLiked: likedPostIds.includes(post._id.toString()),
+      isOwner: post.user._id.toString() === userId
+    }));
+
+    return res.status(200).json({
+      posts: finalPosts
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "Something went wrong"
+    });
+  }
 }
 /**
  * @async 
