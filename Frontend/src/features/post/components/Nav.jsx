@@ -10,7 +10,7 @@ function Nav() {
       <div className="nav__wrapper">
 
         <div className="nav__left">
-          <Link to="/" className="nav__logo">
+          <Link to="/feed-page" className="nav__logo">
             InstaClone
           </Link>
         </div>
