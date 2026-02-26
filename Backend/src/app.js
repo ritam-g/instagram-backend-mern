@@ -45,10 +45,11 @@ app.use('/api/users', userRoute);
 
 // All other routes should serve the React app (single‑page application).
 // This ensures that client‑side routing (React Router / Vite) works when the
-// user reloads the page or navigates directly to a nested URL.  Render’s Node
-// version uses a newer path-to-regexp library which rejects the raw '*' string
-// (see deployment error).  Use '/*' or a middleware instead.
-app.get('/*', (req, res) => {
+// user reloads the page or navigates directly to a nested URL.  Instead of
+// registering a wildcard route pattern (which has caused path-to-regexp errors
+// on different Node versions), simply use a catch-all middleware.  It runs
+// after the API routes and sends the SPA bundle for any unmatched path.
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
 
