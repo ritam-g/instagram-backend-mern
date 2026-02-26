@@ -10,23 +10,18 @@ app.use(cookieParser());
 
 app.use(express.static("./public"))
 // CORS
-const allowedOrigins = [
-    "http://localhost:5173",
-    "https://banking-backend-system-t1aw.onrender.com"
-].filter(Boolean);
 
-app.use(
-    cors({
-        origin: function (origin, callback) {
-            if (!origin) return callback(null, true);
-            if (allowedOrigins.includes(origin)) {
-                return callback(null, true);
-            }
-            return callback(new Error("Not allowed by CORS"));
-        },
-        credentials: true
-    })
-);
+
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://instagram-backend-mern.onrender.com"
+  ],
+  credentials: true
+}));
+
+app.use(cors());
 
 // Routes
 const authRoute = require("./routes/auth.route");
@@ -38,15 +33,7 @@ app.use("/api/posts", postRoute);
 app.use("/api/users", userRoute);
 
 
-app.use('*name',(req,res)=>{
-    //! IF THER IS ANY UNKNOW ROUTE SO IT WILL SHOW THSI INDX.HTML FILE ROUTE 
-    //! BUT ITS NOT GOOD OF DING FULL FILE OF THE YOUR SYSTEM 
-    //! FOR THAT WE HAVE  
-    console.log(__dirname);
-      //__dirname is the locaiton of till backend to src file 
-    res.sendFile(path.join(__dirname,'..','\\public\\index.html'))
-    
-})
+
 
 
 module.exports = app;

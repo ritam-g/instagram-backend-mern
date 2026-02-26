@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Use VITE_API_URL env var (set in .env.local for dev, or Render env for prod)
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'https://instagram-backend-mern.onrender.com',
+    baseURL: import.meta.env.VITE_API_URL,
     withCredentials: true
 })
 /**

@@ -50,8 +50,8 @@ async function registerController(req, res, next) {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // change to true in production
-      sameSite: "lax"
+      secure: true,
+      sameSite: "none"
     });
 
     res.status(201).json({
@@ -106,8 +106,9 @@ async function loginController(req, res, next) {
 
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "lax",
-    })
+      secure: true,
+      sameSite: "none"
+    });
 
     res.status(200).json({
       message: "User logged in successfully.",
