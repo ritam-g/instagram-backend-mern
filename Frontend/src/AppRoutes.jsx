@@ -8,6 +8,7 @@ import ProfilePage from './features/profile/pages/ProfilePage'
 import ProfileRedirect from './features/profile/components/ProfileRedirect'
 import { Toaster } from "react-hot-toast";
 import MainLayout from './components/layout/MainLayout'
+import LandingPage from './features/landing/pages/LandingPage'
 
 function AppRoutes() {
     return (
@@ -26,7 +27,9 @@ function AppRoutes() {
                 }}
             />
             <Routes>
-                <Route path='/' element={<Login />} />
+                <Route path='/' element={<LandingPage />} />
+                <Route path='/login' element={<Login />} />
+
                 <Route path='/register' element={<Register />} />
 
                 <Route element={<MainLayout />}>

@@ -18,6 +18,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'https://instagram-backend-mern.onrender.com',
+  'http://localhost:5174'
   // add your frontend render URL here if it is different
   // e.g. 'https://instagram-frontend-12345.onrender.com'
 ];

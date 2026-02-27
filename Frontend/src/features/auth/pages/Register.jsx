@@ -103,7 +103,7 @@ function Register() {
 
         <p className="mt-5 text-center text-sm text-muted">
           Already have an account?{" "}
-          <Link to="/" className="font-semibold text-[var(--accent)] hover:underline">
+          <Link to="/login" className="font-semibold text-[var(--accent)] hover:underline">
             Login
           </Link>
         </p>
