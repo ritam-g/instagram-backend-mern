@@ -1,82 +1,96 @@
-import React, { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../style/auth.scss";
+import toast from "react-hot-toast";
 import { useAuth } from "../hooks/useAuth";
+import Button from "../../../components/ui/Button";
+import InputField from "../../../components/ui/InputField";
+import { usePageReveal } from "../../../hooks/usePageReveal";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
 
-  const { handelLogin } = useAuth();
+  const { handleLogin, loading } = useAuth();
   const navigate = useNavigate();
+  const pageRef = useRef(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  usePageReveal(pageRef, []);
 
-    if (!email || !password) {
-      setError("Email and password are required.");
+  const validateForm = () => {
+    const nextErrors = {};
+    if (!email) {
+      nextErrors.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
+      nextErrors.email = "Enter a valid email";
+    }
+
+    if (!password) {
+      nextErrors.password = "Password is required";
+    } else if (password.length < 6) {
+      nextErrors.password = "Password must be at least 6 characters";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!validateForm()) {
       return;
     }
 
     try {
-      setLoading(true);
-      setError("");
-
-      await handelLogin(email, password);
-
+      await handleLogin(email, password);
+      toast.success("Welcome back");
       navigate("/feed-page");
-    } catch (err) {
-      setError("Invalid credentials. Please try again.");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      toast.error(error?.message || "Invalid credentials");
     }
   };
 
   return (
-    <div className="auth">
-      <div className="auth__card">
-        <div className="auth__logo">SocialApp</div>
-
-        <h2>Welcome Back</h2>
-        <p className="auth__subtitle">
-          Sign in to continue
+    <div className="auth-shell px-4">
+      <section ref={pageRef} className="glass-surface w-full max-w-md rounded-3xl p-6 sm:p-8">
+        <p className="font-display text-sm font-semibold uppercase tracking-[0.25em] text-[var(--accent)]">
+          Instagram Clone
         </p>
+        <h1 className="mt-2 font-display text-3xl font-bold">Sign in</h1>
+        <p className="mt-2 text-sm text-muted">Continue to your personalized feed.</p>
 
-        <form onSubmit={handleSubmit}>
-          {error && <div className="auth__error">{error}</div>}
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <InputField
+            label="Email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            error={errors.email}
+          />
 
-          <div className="auth__input-group">
-            <input
-              type="email"
-              placeholder=" "
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <label>Email</label>
-          </div>
+          <InputField
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            error={errors.password}
+          />
 
-          <div className="auth__input-group">
-            <input
-              type="password"
-              placeholder=" "
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <label>Password</label>
-          </div>
-
-          <button type="submit" disabled={loading}>
-            {loading ? "Signing in..." : "Login"}
-          </button>
+          <Button type="submit" isLoading={loading} className="w-full">
+            Continue
+          </Button>
         </form>
 
-        <p className="auth__footer">
-          Don’t have an account?
-          <Link to="/register"> Register</Link>
+        <p className="mt-5 text-center text-sm text-muted">
+          Need an account?{" "}
+          <Link to="/register" className="font-semibold text-[var(--accent)] hover:underline">
+            Register
+          </Link>
         </p>
-      </div>
+      </section>
     </div>
   );
 }

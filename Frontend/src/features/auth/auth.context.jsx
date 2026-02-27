@@ -1,42 +1,69 @@
-import React, { createContext, useState } from 'react'
-import { register, login } from './services/auth.api.jsx'
-export const AuthContext = createContext()
-function AuthProvider({ children }) {
-    const [loading, setloading] = useState(false)
-    const [user, setuser] = useState(null)
+import React, { useEffect, useState } from "react";
+import { register, login, getMe } from "./services/auth.api.jsx";
+import { AuthContext } from "./auth.store";
 
-    async function handelLogin(email, password) {
-        setloading(true)
-        try {
-            const response = await login(email, password)
-            setuser(response.user)
-            return response.user
-        } catch (err) {
-            console.log(err);
-        } finally {
-            setloading(false)
-        }
-    }
-    async function handelRegiester(username, email, password) {
-        setloading(true)
-        try {
-            const response = await register(username, email, password)
-            setuser(response.user)
-        } catch (err) {
-            console.log(err);
-
-        } finally {
-            setloading(false)
-        }
-    }
-    return (
-        <AuthContext.Provider
-            value={{ handelLogin, handelRegiester, user, loading }}
-        >
-            {children}
-        </AuthContext.Provider>
-
-    )
+function getErrorMessage(error, fallbackMessage) {
+  return error?.response?.data?.message || fallbackMessage;
 }
 
-export default AuthProvider
+function AuthProvider({ children }) {
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    async function hydrateUser() {
+      try {
+        const me = await getMe();
+        setUser(me);
+      } catch {
+        setUser(null);
+      }
+    }
+    hydrateUser();
+  }, []);
+
+  async function handleLogin(email, password) {
+    setLoading(true);
+    try {
+      const response = await login(email, password);
+      setUser(response.user);
+      return response.user;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, "Unable to login"));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRegister(username, email, password) {
+    setLoading(true);
+    try {
+      const response = await register(username, email, password);
+      setUser(response.user);
+      return response.user;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, "Unable to register"));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <AuthContext.Provider
+      value={{
+        handleLogin,
+        handleRegister,
+        // Backward compatibility with existing misspelled names.
+        handelLogin: handleLogin,
+        handelRegiester: handleRegister,
+        user,
+        setUser,
+        loading,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export default AuthProvider;

@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Use VITE_API_URL env var (set in .env.local for dev, or Render env for prod)
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
     withCredentials: true
 })
 /**
@@ -12,16 +12,9 @@ const api = axios.create({
  * @param {*} password 
  * @returns new user data 
  */
-async function register(username = 'defalut', email, password) {
-
-    try {
-        const res = await api.post('/api/auth/register', { username, email, password })
-        return res.data
-
-    } catch (err) {
-
-        throw err
-    }
+async function register(username = 'default', email, password) {
+    const res = await api.post('/api/auth/register', { username, email, password })
+    return res.data
 }
 /**
  * 
@@ -30,25 +23,16 @@ async function register(username = 'defalut', email, password) {
  * @returns 
  */
 async function login(email, password) {
-    try {
-        const res = await api.post('/api/auth/login', { email, password })
-        return res.data
-
-    } catch (err) {
-        throw err
-    }
+    const res = await api.post('/api/auth/login', { email, password })
+    return res.data
 }
 /**
  * 
  * @returns user detials 
  */
 async function getMe() {
-    try {
-        const res = await api.get('/api/auth/get-me')
-        return res.data
-    } catch (err) {
-        throw err
-    }
+    const res = await api.get('/api/auth/get-me')
+    return res.data
 }
 
 export { register, login, getMe }
