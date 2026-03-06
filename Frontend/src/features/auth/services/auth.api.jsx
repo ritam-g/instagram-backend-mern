@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Use VITE_API_URL env var (set in .env.local for dev, or Render env for prod)
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+    baseURL: import.meta.env.VITE_API_URL || "/",
     withCredentials: true
 })
 /**
