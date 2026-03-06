@@ -7,9 +7,9 @@ const api = axios.create({
     withCredentials: true
 })
 
-export async function getAllPost() {
+export async function getAllPost(page = 1, limit = 10) {
     try {
-        const res = await api.get('/api/posts/get/feed');
+        const res = await api.get(`/api/posts/get/feed?page=${page}&limit=${limit}`);
         return res.data;
     } catch (err) {
         console.error("Fetch Posts Error:", err.response?.data || err.message);

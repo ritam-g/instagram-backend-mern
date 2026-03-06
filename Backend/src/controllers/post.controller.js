@@ -171,13 +171,20 @@ async function unLikePostController(req, res) {
 async function feedController(req, res) {
     try {
         const userId = req.user.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
 
-        // 1️⃣ Get all posts (Ideally we would filter based on followings, but for now fetching all is fine for a small app)
+        // 1️⃣ Get paginated posts
         const posts = await postModel
             .find()
             .populate("user", "username profileImage")
             .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
             .lean();
+
+        const totalPosts = await postModel.countDocuments();
 
         // 2️⃣ Get current user's likes
         const userLikes = await likeModel.find({ userId }).select("post");
@@ -199,7 +206,13 @@ async function feedController(req, res) {
         }));
 
         return res.status(200).json({
-            posts: finalPosts
+            posts: finalPosts,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalPosts / limit),
+                totalPosts,
+                hasNextPage: page * limit < totalPosts
+            }
         });
 
     } catch (err) {

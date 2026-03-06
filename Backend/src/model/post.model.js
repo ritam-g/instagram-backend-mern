@@ -19,4 +19,7 @@ const postSchema = new mongoose.Schema(
     { timestamps: true }
 )
 
+postSchema.index({ user: 1 });
+postSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('userPost', postSchema)
