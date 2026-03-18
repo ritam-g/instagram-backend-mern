@@ -178,6 +178,7 @@ async function feedController(req, res) {
         // 1️⃣ Get paginated posts
         const posts = await postModel
             .find()
+            .select('caption imgUrl createdAt user likes')
             .populate("user", "username profileImage")
             .sort({ createdAt: -1 })
             .skip(skip)

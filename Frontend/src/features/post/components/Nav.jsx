@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import gsap from "gsap";
 import {
@@ -23,32 +23,37 @@ function Nav() {
 
   const profilePath = "/profile/me";
 
-  const navItems = [
-    {
-      label: "Feed",
-      path: "/feed-page",
-      icon: <FiHome />,
-      active: location.pathname === "/feed-page",
-    },
-    {
-      label: "Create",
-      path: "/createpost",
-      icon: <FiPlusSquare />,
-      active: location.pathname === "/createpost",
-    },
-    {
-      label: "Profile",
-      path: profilePath,
-      icon: <FiUser />,
-      active: location.pathname.startsWith("/profile/"),
-    },
-    {
-      label: "Login",
-      path: "/",
-      icon: <FiLogIn />,
-      active: location.pathname === "/",
-    },
-  ];
+  const navItems = useMemo(() => {
+    const items = [
+      {
+        label: "Feed",
+        path: "/feed-page",
+        icon: <FiHome />,
+        active: location.pathname === "/feed-page",
+      },
+      {
+        label: "Create",
+        path: "/createpost",
+        icon: <FiPlusSquare />,
+        active: location.pathname === "/createpost",
+      },
+      {
+        label: "Profile",
+        path: profilePath,
+        icon: <FiUser />,
+        active: location.pathname.startsWith("/profile/"),
+      }
+    ];
+    if (!user) {
+      items.push({
+        label: "Login",
+        path: "/",
+        icon: <FiLogIn />,
+        active: location.pathname === "/",
+      });
+    }
+    return items;
+  }, [location.pathname, user, profilePath]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -88,23 +93,28 @@ function Nav() {
     <>
       <aside
         ref={desktopNavRef}
-        className="glass-surface fixed bottom-4 left-4 top-4 z-40 hidden w-64 rounded-3xl p-4 lg:flex lg:flex-col"
+        className="glass-surface sticky top-0 h-screen z-40 hidden w-64 rounded-3xl p-5 lg:flex lg:flex-col justify-between shrink-0"
       >
+        {/* TOP */}
         <div>
-          <h1 className="font-display text-4xl font-bold tracking-tight">InstaLite</h1>
-          <p className="mt-1 text-sm text-muted">Premium social dashboard</p>
+          <h1 className="font-display text-3xl font-bold tracking-tight">
+            InstaLite
+          </h1>
+          <p className="mt-1 text-xs text-muted dark:text-slate-400">
+            Social dashboard
+          </p>
         </div>
 
-        <nav className="mt-7 flex flex-col gap-2">
+        {/* CENTER */}
+        <nav className="flex flex-col gap-2">
           {navItems.map((item) => (
             <Link
               key={`${item.label}-${item.path}`}
               to={item.path}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-                item.active
-                  ? "bg-[var(--accent)] text-white"
-                  : "text-[var(--text-secondary)] hover:bg-white/50 hover:text-[var(--text-primary)] dark:hover:bg-slate-700/40"
-              }`}
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${item.active
+                ? "bg-[var(--accent)] text-white"
+                : "text-[var(--text-secondary)] hover:bg-white/50 hover:text-[var(--text-primary)] dark:hover:bg-slate-700/40"
+                }`}
             >
               <span className="text-base">{item.icon}</span>
               <span>{item.label}</span>
@@ -112,12 +122,12 @@ function Nav() {
           ))}
         </nav>
 
-        <div className="mt-auto flex items-center gap-2">
+        {/* BOTTOM */}
+        <div className="flex items-center justify-between">
           <button
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/60 text-[var(--text-primary)] transition hover:bg-white dark:bg-slate-800/70"
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/60 text-[var(--text-primary)] transition hover:scale-105 hover:bg-white dark:bg-slate-800/70"
             onClick={toggleTheme}
             type="button"
-            aria-label="toggle theme"
           >
             {theme === "dark" ? <FiSun /> : <FiMoon />}
           </button>
@@ -126,8 +136,7 @@ function Nav() {
             to={profilePath}
             ref={avatarRef}
             onMouseEnter={handleAvatarHover}
-            className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-white/70 bg-white/60 dark:border-slate-600 dark:bg-slate-800/70"
-            aria-label="profile"
+            className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-white/70 bg-white/60 transition hover:scale-105 dark:border-slate-600 dark:bg-slate-800/70"
           >
             {user?.profileImage ? (
               <img
@@ -150,11 +159,10 @@ function Nav() {
           <Link
             key={`mobile-${item.label}-${item.path}`}
             to={item.path}
-            className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg transition ${
-              item.active
-                ? "bg-[var(--accent)] text-white"
-                : "text-[var(--text-secondary)] hover:bg-white/50 dark:hover:bg-slate-700/40"
-            }`}
+            className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg transition ${item.active
+              ? "bg-[var(--accent)] text-white"
+              : "text-[var(--text-secondary)] hover:bg-white/50 dark:hover:bg-slate-700/40"
+              }`}
             aria-label={item.label}
           >
             {item.icon}

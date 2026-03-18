@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import Feed from "../components/Feed";
 import { usePost } from "../hooks/usePost";
 import { PostSkeleton } from "../../../components/ui/Skeleton";
@@ -15,6 +15,12 @@ function FeedPage() {
     getPostData(1);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const observerCallback = useCallback((entries) => {
+    if (entries[0].isIntersecting && pagination.hasNextPage) {
+      getPostData(pagination.currentPage + 1, true);
+    }
+  }, [pagination.hasNextPage, pagination.currentPage, getPostData]);
+
   useEffect(() => {
     if (loading) return;
 
@@ -27,18 +33,14 @@ function FeedPage() {
     const target = document.querySelector("#scroll-sentinel");
     if (!target) return;
 
-    observerRef.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && pagination.hasNextPage) {
-        getPostData(pagination.currentPage + 1, true);
-      }
-    }, options);
+    observerRef.current = new IntersectionObserver(observerCallback, options);
 
     observerRef.current.observe(target);
 
     return () => {
       if (observerRef.current) observerRef.current.disconnect();
     };
-  }, [loading, pagination.hasNextPage, pagination.currentPage]);
+  }, [observerCallback]);
 
   return (
     <section ref={pageRef} className="pb-10">

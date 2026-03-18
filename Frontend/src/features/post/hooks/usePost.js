@@ -1,8 +1,8 @@
-import { useContext } from "react";
+import { useContext, useRef, useCallback } from "react";
 import { PostContext } from "../context/post.store";
 import {
   createPost,
-  deltePost,
+  deletePost,
   followUser,
   getAllPost,
   likePost,
@@ -24,11 +24,20 @@ export function usePost() {
     setPagination
   } = useContext(PostContext);
 
-  async function getPostData(page = 1, isLoadMore = false) {
+  const cache = useRef(new Map());
+
+  const getPostData = useCallback(async (page = 1, isLoadMore = false) => {
+    if (cache.current.has(page)) return; // Dedup
+
+    const controller = new AbortController();
     try {
       if (!isLoadMore) setloading(true);
       setError("");
-      const data = await getAllPost(page);
+      const data = await getAllPost(page, 10, controller.signal);
+
+      if (!data) return; // Aborted
+
+      cache.current.set(page, data);
 
       if (isLoadMore) {
         setfeed((prev) => [...prev, ...(data.posts || [])]);
@@ -40,13 +49,15 @@ export function usePost() {
         setPagination(data.pagination);
       }
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to load feed");
+      if (err.name !== 'AbortError') {
+        setError(err?.response?.data?.message || "Failed to load feed");
+      }
     } finally {
       if (!isLoadMore) setloading(false);
     }
-  }
+  }, [setloading, setError, setfeed, setPagination]);
 
-  async function createPostHandeller(imageFile, caption) {
+  const createPostHandeller = useCallback(async (imageFile, caption) => {
     try {
       const res = await createPost(imageFile, caption);
       setError("");
@@ -55,9 +66,9 @@ export function usePost() {
       setError(err?.response?.data?.message || "Failed to create post");
       throw err;
     }
-  }
+  }, [setError]);
 
-  async function likePostHandeller(postId) {
+  const likePostHandeller = useCallback(async (postId) => {
     try {
       await likePost(postId);
       setfeed((prevFeed) =>
@@ -71,7 +82,7 @@ export function usePost() {
       setError(err?.response?.data?.message || "Failed to like post");
       throw err;
     }
-  }
+  }, [setfeed, setError]);
 
   async function unlikePostHandeller(postId) {
     try {
@@ -91,12 +102,16 @@ export function usePost() {
 
   async function deletePostHandeller(postid) {
     try {
-      const res = await deltePost(postid);
+      const controller = new AbortController();
+      const res = await deletePost(postid, controller.signal);
+      if (!res) return; // Aborted
       setfeed((prevFeed) => prevFeed.filter((singlePost) => singlePost._id !== postid));
       return res.message;
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to delete post");
-      throw err;
+      if (err.name !== 'AbortError') {
+        setError(err?.response?.data?.message || "Failed to delete post");
+        throw err;
+      }
     }
   }
 

@@ -7,11 +7,12 @@ const api = axios.create({
     withCredentials: true
 })
 
-export async function getAllPost(page = 1, limit = 10) {
+export async function getAllPost(page = 1, limit = 10, signal) {
     try {
-        const res = await api.get(`/api/posts/get/feed?page=${page}&limit=${limit}`);
+        const res = await api.get(`/api/posts/get/feed?page=${page}&limit=${limit}`, { signal });
         return res.data;
     } catch (err) {
+        if (err.name === 'AbortError') return null;
         console.error("Fetch Posts Error:", err.response?.data || err.message);
         throw err;
     }
@@ -50,11 +51,12 @@ export async function unlikePost(postId) {
     }
 }
 
-export async function deltePost(postid) {
+export async function deletePost(postid, signal) {
     try {
-        const res = await api.delete(`/api/posts/${postid}`);
+        const res = await api.delete(`/api/posts/${postid}`, { signal });
         return res.data;
     } catch (err) {
+        if (err.name === 'AbortError') return null;
         console.error("Delete Post Error:", err.response?.data || err.message);
         throw err;
     }
